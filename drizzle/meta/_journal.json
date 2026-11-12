@@ -15,6 +15,27 @@
       "when": 1794374105953,
       "tag": "0001_organic_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794449257470,
+      "tag": "0002_rapid_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794449330671,
+      "tag": "0003_chemical_lucky_pierre",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794451745018,
+      "tag": "0004_modern_human_fly",
+      "breakpoints": true
     }
   ]
 }

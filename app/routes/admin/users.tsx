@@ -1,8 +1,9 @@
 import { UserManagement } from "~/features/admin/components/user-management";
-import { cloudflareContext } from "../../workers/app";
-import type { Route } from "./+types/admin.users";
+import type { Route } from "./+types/admin/users";
 
 import { requireAdmin } from "~/lib/auth-guard.server";
+import { LoginStatus } from "~/features/auth/components/login-status";
+import { cloudflareContext } from "../../../workers/app";
 
 export async function loader({
   request,
@@ -21,6 +22,7 @@ export default function AdminUsers({
   loaderData,
 }: Route.ComponentProps) {
   return (
+    <>
     <main className="container mx-auto space-y-6 py-8">
       <h1 className="text-2xl font-bold">ユーザー管理</h1>
 
@@ -30,5 +32,5 @@ export default function AdminUsers({
             <UserManagement currentUserId={loaderData.user.id} />
 
     </main>
-  );
+  </>);
 }

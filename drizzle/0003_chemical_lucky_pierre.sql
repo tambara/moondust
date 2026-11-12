@@ -1,0 +1,1 @@
+ALTER TABLE `pages` ADD `layout_id` text REFERENCES layouts(id);

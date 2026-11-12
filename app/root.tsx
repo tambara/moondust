@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { LoginStatus } from "./features/auth/components/login-status";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -33,6 +34,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+<header className="flex h-14 items-center justify-between border-b px-6">
+          <LoginStatus />
+        </header>
         {children}
         <ScrollRestoration />
         <Scripts />

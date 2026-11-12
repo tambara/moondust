@@ -12,8 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import type { Route } from "./+types/home";
-import { cloudflareContext } from "../../workers/app";
+import type { Route } from "./+types/admin/pages";
+import { cloudflareContext } from "../../../workers/app";
 import { requireUser } from "~/lib/auth-guard.server";
 import { LoginStatus } from "~/features/auth/components/login-status";
 
@@ -57,39 +57,14 @@ export async function action({ request, context }: Route.ActionArgs) {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   return <>
-<LoginStatus/>
 <main className="mx-auto max-w-3xl space-y-8 p-6">
-  <h1 className="text-3xl font-bold tracking-tight">Wiki</h1>
-
-  <Card>
-    <CardHeader>
-      <CardTitle>ページ作成</CardTitle>
-    </CardHeader>
-
-    <CardContent>
-      <Form method="post" className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">タイトル</Label>
-          <Input id="title" name="title" required />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="slug">Slug</Label>
-          <Input id="slug" name="slug" required />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="body">本文</Label>
-          <Textarea id="body" name="body" rows={10} />
-        </div>
-
-        <Button type="submit">作成</Button>
-      </Form>
-    </CardContent>
-  </Card>
-
   <section className="space-y-4">
-    <h2 className="text-xl font-semibold">ページ一覧</h2>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Page管理</h1>
+        <Button >
+          <Link to="/admin/pages/new">新規作成</Link>
+        </Button>
+      </div>
 
     <Card>
       <CardContent className="pt-6">
