@@ -28,6 +28,7 @@ export default function Login() {
     setLoading(true);
 
     try {
+      alert(password)
       const { error } = await authClient.signIn.email({
         email,
         password,

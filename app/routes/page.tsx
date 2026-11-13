@@ -13,13 +13,6 @@ import { renderLayout } from "~/lib/render-layout.server";
 export async function loader({ request, params, context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
-  const session = await getOptionalUser(request, env);
-
-  // const page = await db
-  //   .select()
-  //   .from(pages)
-  //   .where(eq(pages.slug, params.slug))
-  //   .get();
 
   const page = await db.query.pages.findFirst({
     where: eq(pages.slug, params.slug),
@@ -34,7 +27,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
 
   let html = ""
   if (page.layout !== null) {
-     html = renderLayout(page.layout.body, {
+    html = renderLayout(page.layout.body, {
       title: page.title,
       content: page.body,
     });
@@ -46,12 +39,18 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   };
 }
 
+export function meta({ loaderData }: Route.MetaArgs) {
+  return [
+    { title: loaderData?.page.title },
+  ];
+}
+
 export default function Page({ loaderData }: Route.ComponentProps) {
-  const { html,page } = loaderData;
+  const { html, page } = loaderData;
 
   return (<>
     <main>
-<div dangerouslySetInnerHTML={{ __html: html }} />
+      <div dangerouslySetInnerHTML={{ __html: html }} />
     </main>
   </>
   );

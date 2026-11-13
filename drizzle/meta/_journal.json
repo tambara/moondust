@@ -36,6 +36,41 @@
       "when": 1794451745018,
       "tag": "0004_modern_human_fly",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1794464825550,
+      "tag": "0005_adorable_gauntlet",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794530280413,
+      "tag": "0006_grey_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794531099700,
+      "tag": "0007_bouncy_rafael_vega",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1794540585428,
+      "tag": "0008_robust_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1794542892394,
+      "tag": "0009_nifty_star_brand",
+      "breakpoints": true
     }
   ]
 }

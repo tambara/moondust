@@ -1,3 +1,4 @@
+
 import {
   Form,
   redirect,
@@ -5,14 +6,14 @@ import {
   useLoaderData,
   useNavigation,
 } from "react-router";
-import type { Route } from "./+types/admin/pages.new";
-import { pages, layouts } from "~/db/schema";
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod/v4";
+import { layouts } from "~/db/schema";
 import { createDb } from "~/db";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { Label } from "~/components/ui/label";
+import { pageSchema } from "~/features/pages/schemas/page-schema";
 import { cloudflareContext } from "../../../workers/app";
+import { PageForm } from "~/features/pages/components/page-form";
+import type { Route } from "./+types/pages.new";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
@@ -26,49 +27,41 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
 
-  const title = String(formData.get("title") ?? "").trim();
-  const slug = String(formData.get("slug") ?? "").trim();
-  const body = String(formData.get("body") ?? "");
-  const layoutId = String(formData.get("layoutId") ?? "") || null;
+  const submission = parseWithZod(formData, {
+    schema: pageSchema,
+  });
 
-  if (!title || !slug) {
-    throw new Response("タイトルとSlugは必須です", { status: 400 });
+  if (submission.status !== "success") {
+    return submission.reply();
   }
 
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
-  // 選択されたLayoutが存在することを確認
-  if (layoutId) {
-    const layout = await db.query.layouts.findFirst({
-      where: (layouts, { eq }) => eq(layouts.id, layoutId),
-    });
+  const { createPage } = await import(
+    "~/features/pages/services/page-service.server"
+  );
 
-    if (!layout) {
-      throw new Response("指定されたLayoutが存在しません", {
-        status: 400,
-      });
-    }
-  }
-
-  const now = Date.now();
-
-  await db.insert(pages).values({
-    id: crypto.randomUUID(),
-    slug,
-    title,
-    body,
-    layoutId,
-    createdAt: now,
-    updatedAt: now,
-  });
+  await createPage(db, submission.value);
 
   return redirect("/admin/pages");
 }
 
 export default function NewPage() {
   const { layouts } = useLoaderData<typeof loader>();
+  const lastResult = useActionData<typeof action>();
   const navigation = useNavigation();
+
+  const [form, fields] = useForm({
+    lastResult,
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+    onValidate({ formData }) {
+      return parseWithZod(formData, {
+        schema: pageSchema,
+      });
+    },
+  });
 
   const isSubmitting = navigation.state === "submitting";
 
@@ -81,42 +74,20 @@ export default function NewPage() {
         </p>
       </div>
 
-      <Form method="post" className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="title">タイトル</Label>
-          <Input id="title" name="title" required />
-        </div>
+      <Form id={form.id}
+        method="post" className="space-y-6">
+        {form.errors?.map((error) => (
+          <p key={error} className="text-sm text-destructive">
+            {error}
+          </p>
+        ))}
 
-        <div className="space-y-2">
-          <Label htmlFor="slug">Slug</Label>
-          <Input id="slug" name="slug" required />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="layoutId">Layout</Label>
-          <select
-            id="layoutId"
-            name="layoutId"
-            defaultValue=""
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            <option value="">Layoutを選択してください</option>
-            {layouts.map((layout) => (
-              <option key={layout.id} value={layout.id}>
-                {layout.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="body">本文</Label>
-          <Textarea id="body" name="body" rows={10} />
-        </div>
-
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "作成中..." : "作成"}
-        </Button>
+        <PageForm
+          fields={fields}
+          layouts={layouts}
+          submitting={isSubmitting}
+          submitLabel="作成"
+        />
       </Form>
     </div>
   );

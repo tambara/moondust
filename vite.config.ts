@@ -9,6 +9,9 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
   ],
+  optimizeDeps: {
+    exclude: ["tailwindcss-iso"],
+  },
   resolve: {
     tsconfigPaths: true,
   },

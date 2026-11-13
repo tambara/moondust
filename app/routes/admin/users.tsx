@@ -1,9 +1,9 @@
 import { UserManagement } from "~/features/admin/components/user-management";
-import type { Route } from "./+types/admin/users";
 
 import { requireAdmin } from "~/lib/auth-guard.server";
 import { LoginStatus } from "~/features/auth/components/login-status";
 import { cloudflareContext } from "../../../workers/app";
+import type { Route } from "./+types/users";
 
 export async function loader({
   request,

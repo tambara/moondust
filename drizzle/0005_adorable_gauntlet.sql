@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `layouts_name_unique` ON `layouts` (`name`);

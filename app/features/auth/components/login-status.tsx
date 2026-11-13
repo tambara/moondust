@@ -26,7 +26,7 @@ export function LoginStatus() {
     if (!session) {
         return (
             <Button variant="outline" >
-                <Link to="/login">ログイン</Link>
+                <Link to="/admin/login">ログイン</Link>
             </Button>
         );
     }
@@ -73,7 +73,13 @@ return (
             >
               ページ一覧
             </DropdownMenuItem>
-          </DropdownMenuGroup>
+          <DropdownMenuItem
+              onClick={() => {
+                window.location.href = "/admin/scripts";
+              }}
+            >
+              スクリプト一覧
+            </DropdownMenuItem>          </DropdownMenuGroup>
         </>
       )}
 

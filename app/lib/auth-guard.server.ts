@@ -19,7 +19,7 @@ export async function requireUser(
   const session = await getOptionalUser(request, env);
 
   if (!session) {
-    throw redirect("/login");
+    throw redirect("/admin/login");
   }
 
   return session;

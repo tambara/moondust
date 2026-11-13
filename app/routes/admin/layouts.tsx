@@ -2,12 +2,12 @@
 import { Link, useLoaderData } from "react-router";
 import { eq } from "drizzle-orm";
 import { createDb } from "~/db";
-import type { Route } from "./+types/admin/layouts";
 
 import { layouts } from "~/db/schema";
 import { requireAdmin } from "~/lib/auth-guard.server";
 import { Button } from "~/components/ui/button";
 import { cloudflareContext } from "../../../workers/app";
+import type { Route } from "./+types/layouts";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);

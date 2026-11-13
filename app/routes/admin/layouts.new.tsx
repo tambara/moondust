@@ -1,111 +1,85 @@
 
-import { Form, redirect, useActionData, useNavigation } from "react-router";
-import { randomUUID } from "crypto";
+import { Form, redirect, useActionData, useLoaderData, useNavigation } from "react-router";
 import type { Route } from "./+types/admin/layouts.new";
 
 import { createDb } from "~/db";
-import { layouts } from "~/db/schema";
-import { requireAdmin } from "~/lib/auth-guard.server";
-
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { Label } from "~/components/ui/label";
 import { cloudflareContext } from "../../../workers/app";
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod/v4";
+import { layoutSchema } from "~/features/layouts/schemas/layout-schema";
+import { LayoutForm } from "~/features/layouts/components/layout-form";
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const { env } = context.get(cloudflareContext);
-  await requireAdmin(request, env);
-
   const formData = await request.formData();
 
-  const name = String(formData.get("name") ?? "").trim();
-  const body = String(formData.get("body") ?? "");
-
-  if (!name) {
-    return { error: "Layout名を入力してください。" };
-  }
-
-  if (!body.trim()) {
-    return { error: "HTMLを入力してください。" };
-  }
-
-  const db = createDb(env.pages);
-
-  await db.insert(layouts).values({
-    id: randomUUID(),
-    name,
-    body,
+  const submission = parseWithZod(formData, {
+    schema: layoutSchema,
   });
 
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const { env } = context.get(cloudflareContext);
+  const db = createDb(env.pages);
+
+  const { createLayout } = await import(
+    "~/features/layouts/services/layout-service.server"
+  );
+
+  await createLayout(db, submission.value)
   return redirect("/admin/layouts");
 }
 
-export default function NewLayoutPage() {
-  const actionData = useActionData<typeof action>();
+
+export default function NewLayout() {
+  const lastResult = useActionData<typeof action>();
   const navigation = useNavigation();
+
+  const [form, fields] = useForm({
+    lastResult,
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+            defaultValue: {
+            body: `<div class="container mx-auto">
+  <main>
+    <slot name="content" />
+  </main>
+</div>`},
+
+               
+
+    onValidate({ formData }) {
+      return parseWithZod(formData, {
+        schema: layoutSchema,
+      });
+    },
+  });
 
   const isSubmitting = navigation.state === "submitting";
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Layout新規作成</h1>
+        <h1 className="text-2xl font-bold">Page新規作成</h1>
         <p className="text-sm text-muted-foreground">
-          ページに適用するHTMLレイアウトを作成します。
+          ページを作成します。
         </p>
       </div>
 
-      <Form method="post" className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="name">Layout名</Label>
-          <Input
-            id="name"
-            name="name"
-            placeholder="例：標準レイアウト"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="body">HTML</Label>
-          <Textarea
-            id="body"
-            name="body"
-            defaultValue={`<div class="container mx-auto">
-  <main>
-    <slot name="content" />
-  </main>
-</div>`}
-            rows={24}
-            className="font-mono text-sm"
-            required
-          />
-          <p className="text-xs text-muted-foreground">
-            {'<slot name="content" />'} の位置にページ本文が挿入されます。
-            {'<slot name="title" />'} の位置にタイトルが挿入されます。
+           <Form   id={form.id}
+ method="post"  className="space-y-6">
+        {form.errors?.map((error) => (
+          <p key={error} className="text-sm text-destructive">
+            {error}
           </p>
-        </div>
+        ))}
 
-        {actionData?.error && (
-          <p className="text-sm text-destructive">
-            {actionData.error}
-          </p>
-        )}
-
-        <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.location.href = "/admin/layouts"}
-          >
-            キャンセル
-          </Button>
-
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "保存中..." : "保存"}
-          </Button>
-        </div>
+        <LayoutForm
+          fields={fields}
+          submitting={isSubmitting}
+          submitLabel="作成"
+        />
       </Form>
     </div>
   );
