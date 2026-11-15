@@ -43,7 +43,7 @@ const app = new Hono<{ Bindings: Env }>();
 import { eq } from "drizzle-orm";
 import { createDb } from "~/db";
 import { pages, systemSettings } from "~/db/schema";
-import { renderLayout } from "~/lib/render-layout.server";
+import { renderLayout } from "~/lib/template";
 
 const api = new Hono<{ Bindings: Env }>();
 api.get("/tailwind.css", async (c) => {
@@ -78,16 +78,25 @@ api.get("/:slug", async (c) => {
     return c.notFound();
   }
 
-  let html = ""
   if (page.layout !== null) {
-    html = renderLayout(page.layout.body, {
-      title: page.title,
-      content: page.body,
+
+    const html = await renderLayout(page.layout.body, {
+      page
     });
+
+    // const locals = {
+    //   page,
+    //   renderPage: (data = {}) =>
+    //     ejs.render(page.body, {
+    //       ...locals,
+    //       ...data,
+    //     }),
+    // };
+
+    // const html = ejs.render(page.layout.body, locals);
     return c.html(html);
   } else {
     return c.text("Layout is not found");
-
   }
 });
 

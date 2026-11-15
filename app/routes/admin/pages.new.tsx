@@ -1,69 +1,50 @@
 
 import {
-  Form,
   redirect,
-  useActionData,
   useLoaderData,
-  useNavigation,
 } from "react-router";
-import { useForm } from "@conform-to/react";
-import { parseWithZod } from "@conform-to/zod/v4";
-import { layouts } from "~/db/schema";
 import { createDb } from "~/db";
-import { pageSchema } from "~/features/pages/schemas/page-schema";
 import { cloudflareContext } from "../../../workers/app";
 import { PageForm } from "~/features/pages/components/page-form";
 import type { Route } from "./+types/pages.new";
+
 
 export async function loader({ context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
-  const layoutItems = await db.select().from(layouts);
-
+  const layoutItems = await db.query.layouts.findMany({
+    with: {
+      attributes: true,
+    },
+  });
   return { layouts: layoutItems };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const formData = await request.formData();
-
-  const submission = parseWithZod(formData, {
-    schema: pageSchema,
-  });
-
-  if (submission.status !== "success") {
-    return submission.reply();
-  }
-
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
+  const { parsePageForm } = await import(
+    "~/features/pages/services/page-form.server"
+  );
+
+  const parsed = await parsePageForm(db, await request.formData());
+
+  if (!parsed.success) {
+    return { result: parsed.result };
+  }
   const { createPage } = await import(
     "~/features/pages/services/page-service.server"
   );
 
-  await createPage(db, submission.value);
+  await createPage(db, parsed.data, parsed.layoutItem);
 
   return redirect("/admin/pages");
 }
 
 export default function NewPage() {
   const { layouts } = useLoaderData<typeof loader>();
-  const lastResult = useActionData<typeof action>();
-  const navigation = useNavigation();
-
-  const [form, fields] = useForm({
-    lastResult,
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
-    onValidate({ formData }) {
-      return parseWithZod(formData, {
-        schema: pageSchema,
-      });
-    },
-  });
-
-  const isSubmitting = navigation.state === "submitting";
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -74,21 +55,17 @@ export default function NewPage() {
         </p>
       </div>
 
-      <Form id={form.id}
-        method="post" className="space-y-6">
-        {form.errors?.map((error) => (
-          <p key={error} className="text-sm text-destructive">
-            {error}
-          </p>
-        ))}
 
-        <PageForm
-          fields={fields}
-          layouts={layouts}
-          submitting={isSubmitting}
-          submitLabel="作成"
-        />
-      </Form>
+      <PageForm
+        defaultValue={{
+          title: "",
+          slug: "",
+          layoutId: "",
+          attributeValues:[]
+        }}
+        layouts={layouts}
+        submitLabel="作成"
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { createDb } from "~/db";
 import { pages } from "~/db/schema";
 import { Button } from "~/components/ui/button";
@@ -9,6 +9,8 @@ import {
 import { cloudflareContext } from "../../../workers/app";
 import { requireUser } from "~/lib/auth-guard.server";
 import type { Route } from "./+types/pages";
+import { useState } from "react";
+import { ResourceList } from "~/features/admin/components/resource-list";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
@@ -22,37 +24,41 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   };
 }
 
-export default function Home({ loaderData }: Route.ComponentProps) {
+export default function Pages({ loaderData }: Route.ComponentProps) {
+
+  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+
+  async function handleDelete(item: any) {
+
+  }
   return <>
-    <main className="mx-auto max-w-3xl space-y-8 p-6">
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Page管理</h1>
+          <h1 className="text-2xl font-bold">ページ管理</h1>
           <Button >
             <Link to="/admin/pages/new">新規作成</Link>
           </Button>
         </div>
-
-        <Card>
-          <CardContent className="pt-6">
-            <ul className="divide-y">
-              {loaderData.pages.map((page) => (
-                <li key={page.id} className="py-3">
-                  <Link reloadDocument
-                    to={`/${page.slug}`}
-                    className="text-primary hover:underline"
-                  >
-                    {page.title}
-                  </Link>
-                  <Link to={`/admin/pages/${page.id}/edit`}>
-                    編集
-                  </Link>      </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <ResourceList
+          title="ページ一覧"
+          items={loaderData.pages}
+          getId={(user) => user.id}
+          renderItem={(user) => (
+            <>
+              <p className="font-medium">{user.title}</p>
+              <p className="truncate text-sm text-muted-foreground">
+                {user.slug}
+              </p>
+            </>
+          )}
+          searchPlaceholder="ページを検索..."
+          emptyMessage="ペ０時がありません"
+          onSearch={setSearch}
+          onEdit={(page) => navigate(`/admin/pages/${page.id}/edit`)}
+          onDelete={handleDelete}
+        />
       </section>
-    </main>
   </>
 }
 

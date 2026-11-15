@@ -71,6 +71,55 @@
       "when": 1794542892394,
       "tag": "0009_nifty_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1794647875790,
+      "tag": "0010_glossy_catseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1794648275392,
+      "tag": "0011_fancy_justice",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1794649648695,
+      "tag": "0012_lying_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1794662854425,
+      "tag": "0013_serious_kree",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1794666028042,
+      "tag": "0014_same_catseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1794707796027,
+      "tag": "0015_absurd_nebula",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1794721738743,
+      "tag": "0016_cool_lorna_dane",
+      "breakpoints": true
     }
   ]
 }

@@ -4,7 +4,6 @@ export default [
 
   layout("routes/admin/layout.tsx", [
     route("admin/login", "routes/admin/login.tsx"),
-    route("admin/users", "routes/admin/users.tsx"),
     route("auth/*", "routes/api.auth.$.ts"),
     route("admin/pages", "routes/admin/pages.tsx"),
     route("admin/pages/new", "routes/admin/pages.new.tsx"),
@@ -18,6 +17,11 @@ export default [
     route("admin/scripts/new", "routes/admin/scripts.new.tsx"),
     route("admin/scripts/:id/edit", "routes/admin/scripts.edit.tsx"),
 
+    route("admin/users", "routes/admin/users.tsx"),
+    route("admin/users/new", "routes/admin/users.new.tsx"),
+    route("admin/users/:id/edit", "routes/admin/users.edit.tsx"),
+
+    route("admin/export", "routes/admin/export.ts"),
 
   ]),
   // route(":slug", "routes/pag.tsx"),

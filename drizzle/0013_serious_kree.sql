@@ -1,0 +1,1 @@
+ALTER TABLE `attributes` DROP COLUMN `render_type`;

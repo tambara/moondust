@@ -16,72 +16,58 @@ import { PageForm } from "~/features/pages/components/page-form";
 import { eq } from "drizzle-orm";
 import "~/lib/zod";
 import type { Route } from "./+types/pages.edit";
+import { useCallback } from "react";
 
-export async function loader({ context,params }: Route.LoaderArgs) {
+export async function loader({ context, params }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
-  const layoutItems = await db.select().from(layouts);
+  const layoutItems = await db.query.layouts.findMany({
+    with: {
+      attributes: true,
+    },
+  });
+  const page = await db.query.pages.findFirst({
+    where: eq(pages.id, params.id),
+    with: {
+      layout: true,
+      attributeValues: true,
+    },
+  });
 
-    const page = await db.query.pages.findFirst({
-      where: eq(pages.id, params.id),
-      with: {
-        layout: true,
-      },
-    });
-  
-    if (!page) {
-      throw new Response("Page not found", { status: 404 });
-    }
-  
+  if (!page) {
+    throw new Response("Page not found", { status: 404 });
+  }
+
   return { page, layouts: layoutItems };
 }
 
-export async function action({ request, params, context }: Route.ActionArgs) {
-  const formData = await request.formData();
-console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-console.log(Object.fromEntries(formData));
-  const submission = parseWithZod(formData, {
-    schema: pageSchema,
-  });
-
-  if (submission.status !== "success") {
-    return submission.reply();
-  }
-
+export async function action({ params, request, context }: Route.ActionArgs) {
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
+
+  const { parsePageForm } = await import(
+    "~/features/pages/services/page-form.server"
+  );
+
+  const parsed = await parsePageForm(db, await request.formData());
+
+  if (!parsed.success) {
+    return { result: parsed.result };
+  }
 
   const { updatePage } = await import(
     "~/features/pages/services/page-service.server"
   );
 
-  await updatePage(db, params.id!, submission.value);
+  await updatePage(db, params.id!, parsed.data, parsed.layoutItem);
 
   return redirect("/admin/pages");
 }
 
+
 export default function EditPage() {
   const { page, layouts } = useLoaderData<typeof loader>();
-  const lastResult = useActionData<typeof action>();
-  const navigation = useNavigation();
-
-  const [form, fields] = useForm({
-    lastResult,
-    defaultValue: {
-      title: page.title,
-      slug: page.slug,
-      body: page.body,
-      layoutId: page.layoutId ?? undefined,
-    },
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
-    onValidate({ formData }) {
-      return parseWithZod(formData, {
-        schema: pageSchema,
-      });
-    },
-  });
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -92,21 +78,16 @@ export default function EditPage() {
         </p>
       </div>
 
-      <Form   id={form.id}
-method="post" className="space-y-6">
-        {form.errors?.map((error) => (
-          <p key={error} className="text-sm text-destructive">
-            {error}
-          </p>
-        ))}
-
-        <PageForm
-          fields={fields}
-          layouts={layouts}
-          submitting={navigation.state === "submitting"}
-          submitLabel="更新"
-        />
-      </Form>
+      <PageForm
+        defaultValue={{
+          title: page.title,
+          slug: page.slug,
+          layoutId: page.layoutId,
+          attributeValues: page.attributeValues
+        }}
+        layouts={layouts}
+        submitLabel="更新"
+      />
     </div>
   );
 }

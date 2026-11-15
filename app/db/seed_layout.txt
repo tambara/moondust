@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }}</title>
+<link rel="stylesheet" href="/tailwind.css">
+<style>
+/*
+ * shadcn/typeset
+ * https://ui.shadcn.com/docs/typeset.
+ */
+
+@layer components {
+  .typeset {
+    --typeset-font-body: inherit;
+    --typeset-font-heading: var(--font-heading);
+    --typeset-font-mono: var(--font-mono);
+    --typeset-size: 1em;
+    --typeset-leading: 1.75;
+    --typeset-flow: 1.25em;
+  }
+}
+
+@layer components {
+  .typeset {
+    font-family: var(--typeset-font-body);
+    font-size: calc(var(--typeset-size) * 1.125);
+    line-height: var(--typeset-leading);
+    color: var(--color-foreground, currentColor);
+    overflow-wrap: break-word;
+    margin-trim: block-start;
+
+    @media (min-width: 48rem), print {
+      font-size: var(--typeset-size);
+    }
+
+    --typeset-muted: var(
+      --color-muted-foreground,
+      color-mix(in oklab, currentColor 60%, transparent)
+    );
+    --typeset-rule: var(
+      --color-border,
+      color-mix(in oklab, currentColor 20%, transparent)
+    );
+  }
+
+  .typeset
+    *:not(
+      :where(
+        .not-typeset,
+        [data-not-typeset],
+        .not-typeset *,
+        [data-not-typeset] *,
+        .typeset [data-slot],
+        .typeset [data-slot] *
+      )
+    ) {
+    /* Paragraphs. */
+    &:where(p) {
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+    }
+
+    /* Headings. */
+    &:where(h1, h2, h3, h4, h5, h6) {
+      color: var(--color-foreground, currentColor);
+      font-family: var(--typeset-font-heading);
+      font-weight: 600;
+      margin-block-end: 0;
+    }
+    &:where(h1) {
+      font-size: 1.75em;
+      line-height: 1.3;
+      margin-block-start: var(--typeset-flow);
+    }
+    &:where(h2) {
+      font-size: 1.25em;
+      line-height: 1.4;
+      margin-block-start: calc(var(--typeset-flow) * 1.4);
+    }
+    &:where(h3) {
+      font-size: 1.125em;
+      line-height: 1.45;
+      margin-block-start: var(--typeset-flow);
+    }
+    &:where(h4) {
+      font-size: 1em;
+      line-height: 1.5;
+      margin-block-start: var(--typeset-flow);
+    }
+    &:where(h5) {
+      font-size: 0.875em;
+      line-height: 1.5;
+      font-weight: 500;
+      color: var(--typeset-muted);
+      margin-block-start: calc(var(--typeset-flow) / 0.875);
+    }
+    &:where(h6) {
+      font-size: 0.8125em;
+      line-height: 1.5;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--typeset-muted);
+      margin-block-start: calc(var(--typeset-flow) / 0.8125);
+    }
+    /* Anchors. */
+    &:where([id]) {
+      scroll-margin-block-start: var(--typeset-flow);
+    }
+
+    /* Headings own the space below them. */
+    &:where(h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *) {
+      margin-block-start: 1em;
+    }
+    &:where(:is(h1, h2, h3, h4) :is(code)) {
+      font-size: 0.9em;
+    }
+
+    /* Links. */
+    &:where(a) {
+      color: inherit;
+      font-weight: 500;
+      text-decoration-line: underline;
+      text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+    }
+    &:where(a:hover) {
+      text-decoration-color: currentColor;
+    }
+    &:where(a:focus-visible) {
+      outline: 2px solid var(--color-ring, currentColor);
+      outline-offset: 2px;
+      border-radius: 0.125em;
+    }
+    &:where(:is(h1, h2, h3, h4, h5, h6) :is(a)) {
+      font-weight: inherit;
+    }
+
+    /* Inline semantics. */
+    &:where(strong, b) {
+      font-weight: 600;
+    }
+    &:where(:is(h1, h2, h3, h4) :is(strong, b)) {
+      font-weight: 600;
+    }
+    &:where(mark) {
+      background-color: color-mix(
+        in oklab,
+        oklch(0.86 0.17 95) 40%,
+        transparent
+      );
+      color: inherit;
+      padding: 0.05em 0.15em;
+      border-radius: 0.2em;
+    }
+    &:where(abbr[title]) {
+      text-decoration-line: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 0.2em;
+      cursor: help;
+    }
+    &:where(del, s) {
+      color: var(--typeset-muted);
+      text-decoration-line: line-through;
+    }
+    &:where(sup, sub) {
+      font-size: 0.75em;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+    }
+    &:where(sup) {
+      top: -0.5em;
+    }
+    &:where(sub) {
+      bottom: -0.25em;
+    }
+    &:where(sup a) {
+      text-decoration-line: none;
+      font-weight: 500;
+    }
+
+    /* Lists. */
+    &:where(ul) {
+      list-style-type: disc;
+    }
+    &:where(ol) {
+      list-style-type: decimal;
+    }
+    &:where(ul ul) {
+      list-style-type: circle;
+    }
+    &:where(ul ul ul) {
+      list-style-type: square;
+    }
+    &:where(ol[type="a" i]) {
+      list-style-type: lower-alpha;
+    }
+    &:where(ol[type="i" i]) {
+      list-style-type: lower-roman;
+    }
+    &:where(ol[type="A" s]) {
+      list-style-type: upper-alpha;
+    }
+    &:where(ol[type="I" s]) {
+      list-style-type: upper-roman;
+    }
+    &:where(ul, ol) {
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+      padding-inline-start: 1.5em;
+    }
+    &:where(li) {
+      margin-block-start: 0.5em;
+      padding-inline-start: 0.4em;
+    }
+    &:where(li > p, li > ul, li > ol) {
+      margin-block-start: 0.5em;
+    }
+    &:where(ul > li)::marker {
+      color: var(--typeset-muted);
+    }
+    &:where(ol > li)::marker {
+      color: var(--typeset-muted);
+    }
+
+    /* GFM task lists. */
+    &:where(ul.contains-task-list) {
+      list-style-type: none;
+      padding-inline-start: 0.25em;
+    }
+    &:where(li.task-list-item > input[type="checkbox"]) {
+      margin-inline-end: 0.5em;
+      vertical-align: -0.1em;
+      accent-color: var(--color-primary, currentColor);
+    }
+
+    /* Disclosures. */
+    &:where(details) {
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+    }
+    &:where(summary) {
+      cursor: pointer;
+      font-weight: 500;
+    }
+    &:where(summary)::marker {
+      color: var(--typeset-muted);
+    }
+
+    /* Keyboard keys. */
+    &:where(kbd) {
+      font-family: inherit;
+      font-size: 0.85em;
+      font-weight: 500;
+      border: 1px solid var(--typeset-rule);
+      border-block-end-width: 2px;
+      border-radius: min(calc(var(--radius, 0.5em) * 0.6), 0.35em);
+      padding: 0.0625em 0.35em;
+    }
+
+    /* Definition lists. */
+    &:where(dl) {
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+    }
+    &:where(dt) {
+      font-weight: 500;
+      margin-block-start: 1em;
+    }
+    &:where(dt + dt) {
+      margin-block-start: 0.25em;
+    }
+    &:where(dd) {
+      margin-block-start: 0.25em;
+      margin-inline-start: 0;
+      padding-inline-start: 1em;
+      color: var(--typeset-muted);
+    }
+
+    /* Inline code. */
+    &:where(:not(pre) > code) {
+      background-color: var(
+        --color-muted,
+        color-mix(in oklab, currentColor 8%, transparent)
+      );
+      font-family: var(--typeset-font-mono);
+      font-size: 0.85em;
+      border-radius: min(calc(var(--radius, 0.5em) * 0.6), 0.35em);
+      padding: 0.125em 0.3em;
+    }
+
+    /* Code blocks. */
+    &:where(pre) {
+      background-color: var(
+        --color-muted,
+        color-mix(in oklab, currentColor 8%, transparent)
+      );
+      font-family: var(--typeset-font-mono);
+      font-size: 0.875em;
+      line-height: 1.5;
+      tab-size: 2;
+      direction: ltr;
+      border-radius: var(--radius, 0.5em);
+      padding: 0.75em 1em;
+      overflow-x: auto;
+      margin-block-start: calc(var(--typeset-flow) / 0.875);
+      margin-block-end: 0;
+    }
+    &:where(pre code) {
+      background-color: transparent;
+      font-family: inherit;
+      font-size: inherit;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    /* Blockquote. */
+    &:where(blockquote) {
+      border-inline-start: 2px solid var(--typeset-rule);
+      padding-inline-start: 1em;
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+      margin-inline: 0;
+    }
+
+    /* Dividers. */
+    &:where(hr) {
+      border: 0;
+      border-block-start: 1px solid var(--typeset-rule);
+      margin-block-start: calc(var(--typeset-flow) * 2.4);
+      margin-block-end: 0;
+    }
+    &:where(hr + h1, hr + h2, hr + h3, hr + h4) {
+      margin-block-start: var(--typeset-flow);
+    }
+
+    /* GFM footnotes. */
+    &:where(.footnotes, [data-footnotes]) {
+      margin-block-start: calc(var(--typeset-flow) * 2);
+      border-block-start: 1px solid var(--typeset-rule);
+      padding-block-start: var(--typeset-flow);
+      font-size: 0.875em;
+      color: var(--typeset-muted);
+    }
+
+    /* Math. */
+    &:where(math[display="block"]) {
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-block: 0.25em;
+    }
+
+    /* Media. */
+    &:where(img, video) {
+      border-radius: var(--radius, 0.5em);
+      max-width: 100%;
+      height: auto;
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+    }
+    &:where(p img) {
+      margin-block-start: 0;
+    }
+    &:where(figure) {
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+      margin-inline: 0;
+    }
+    &:where(figcaption, caption) {
+      color: var(--typeset-muted);
+      font-size: 0.875em;
+      text-align: center;
+      margin-block-start: calc(0.75em / 0.875);
+    }
+    &:where(caption) {
+      caption-side: bottom;
+    }
+
+    /* Tables. Separators sit on cells, not tr:last-child: append-safe.
+       Bare tables stay real tables (keep their semantics) and wrap to fit. */
+    &:where(table) {
+      max-width: 100%;
+      font-size: 1em;
+      line-height: 1.5;
+      font-variant-numeric: tabular-nums;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-block-end: 1px solid var(--typeset-rule);
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+    }
+
+    /* Horizontal scroll for any wide block. Wrap it and the wrapper owns the
+       flow margin. Tables shrink to fit, so widen the table to make it scroll
+       instead of compress. */
+    &:where(.typeset-scroll) {
+      overflow-x: auto;
+      margin-block-start: var(--typeset-flow);
+    }
+    &:where(.typeset-scroll > *) {
+      margin-block-start: 0;
+    }
+    &:where(.typeset-scroll table) {
+      width: max-content;
+      max-width: none;
+    }
+    &:where(thead th) {
+      font-weight: 500;
+      text-align: start;
+      white-space: nowrap;
+      padding: 0.65em 1em;
+    }
+    &:where(:is(tbody, tfoot) :is(td, th)) {
+      padding: 0.75em 1em;
+      text-align: start;
+      vertical-align: top;
+      border-block-start: 1px solid var(--typeset-rule);
+    }
+    &:where(tbody th, tfoot th) {
+      font-weight: 500;
+    }
+    &:where(th:first-child, td:first-child) {
+      padding-inline-start: 0;
+    }
+    &:where(th[align="center"], td[align="center"]) {
+      text-align: center;
+    }
+    &:where(th[align="right"], td[align="right"]) {
+      text-align: end;
+    }
+
+    /* Blocks inside list items keep the list's tighter rhythm. */
+    &:where(li > blockquote, li > table, li > figure) {
+      margin-block-start: 0.5em;
+    }
+    &:where(li > pre) {
+      margin-block-start: calc(0.5em / 0.875);
+    }
+
+    @media print {
+      &:where(pre, table, blockquote, figure) {
+        break-inside: avoid;
+      }
+      &:where(h1, h2, h3, h4) {
+        break-after: avoid;
+      }
+    }
+
+    /* Forced colors strips the code background, so give it a border. */
+    @media (forced-colors: active) {
+      &:where(:not(pre) > code) {
+        border: 1px solid;
+      }
+    }
+  }
+
+  /* Components (anything with data-slot) keep their own styles. A component
+     placed directly in the flow gets the same space above as a paragraph. */
+  .typeset
+    > :where([data-slot]):not(
+      :where(
+        .not-typeset,
+        [data-not-typeset],
+        .not-typeset *,
+        [data-not-typeset] *
+      )
+    ) {
+    margin-block-start: var(--typeset-flow);
+  }
+
+  /* First child adds no space above. Last so it wins ties. */
+  .typeset
+    > :where(:first-child):not(
+      :where(
+        .not-typeset,
+        [data-not-typeset],
+        .not-typeset *,
+        [data-not-typeset] *
+      )
+    ),
+  .typeset
+    > :where(:first-child)
+    > :where(:first-child):not(
+      :where(
+        .not-typeset,
+        [data-not-typeset],
+        .not-typeset *,
+        [data-not-typeset] *
+      )
+    ),
+  .typeset
+    :where(
+      li > :first-child,
+      blockquote > :first-child,
+      td > :first-child,
+      th > :first-child,
+      dd > :first-child,
+      figure > :first-child,
+      figure > picture > img
+    ):not(
+      :where(
+        .not-typeset,
+        [data-not-typeset],
+        .not-typeset *,
+        [data-not-typeset] *
+      )
+    ) {
+    margin-block-start: 0;
+  }
+}
+
+
+</style>
+  </head>
+  <body>
+<div class="min-h-screen grid grid-rows-[auto_1fr_auto]">
+
+<header class=" w-full">
+  <nav class="bg-neutral-primary shadow-[0px_4px_15px_#2f3f9314]">
+      <div class="flex flex-wrap justify-between items-center mx-auto max-w-4xl py-4">
+          <a href="https://flowbite.com" class="flex items-center space-x-3 rtl:space-x-reverse">
+              <svg class="h-7" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="タンバリン" style="color:#4d4d4d">
+  <g transform="translate(36.3 28.1) rotate(45)">
+    <path d="M6.7 -16.5A32.1 16.8 0 1 1 -7.2 -16.4"/>
+    <path d="M-26.3 20.9A32.1 16.8 0 0 0 29.8 17.6"/>
+    <path d="M-30.3 7.3A5.4 5.4 0 1 1 -30.8 -3A32.1 16.8 0 0 0 -30.3 7.3Z"/>
+    <path d="M-16.9 17A7.8 7.8 0 1 1 -30 8.7A32.1 16.8 0 0 0 -16.9 17Z"/>
+    <path d="M11.8 19.7A9 9 0 0 1 -6 20.6A32.1 16.8 0 0 0 11.8 19.7Z"/>
+    <path d="M32.1 4.9A7.2 7.2 0 1 1 22.9 15.9A32.1 16.8 0 0 0 32.1 4.9Z"/>
+  </g>
+</svg>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="62.082481mm"
+  height="5.7636781mm"
+  viewBox="0 0 62.082481 5.7636781"
+  role="img"
+  aria-label="TAMBOURINE.ME"
+>
+  <g transform="translate(-68.974106,-85.551336)">
+    <path
+      fill="currentColor"
+      d="M 70.075477,91.107582 V 87.79359 h -1.101371 v -1.931104 h 4.573408 v 1.931104 h -1.106311 v 3.313992 z m 2.777786,0 3.244848,-5.556246 3.244848,5.556246 z m 6.600452,0 v -5.398201 l 2.83492,1.985431 2.839859,-1.985431 v 5.398201 H 82.762768 V 89.7 L 82.288635,90.030905 81.819441,89.7 v 1.407582 z m 6.067075,0 v -5.245096 h 2.83492 c 0.696383,0 1.264355,0.553155 1.264355,1.234721 0,0.469194 -0.2667,0.879122 -0.661811,1.086555 0.370417,0.03457 0.696383,0.232128 0.903816,0.513644 0.03951,0.04939 0.08396,0.108656 0.118533,0.1778 0.0049,0.0049 0.0099,0.01482 0.01482,0.01976 0.0099,0.01482 0.0247,0.03457 0.03457,0.05927 0.04445,0.08396 0.08396,0.192617 0.108656,0.316089 0.07902,0.365477 0.02963,0.775405 -0.108656,1.032227 -0.04445,0.118533 -0.103716,0.217311 -0.167922,0.286455 -0.232127,0.316089 -0.607483,0.518583 -1.032227,0.518583 z m 7.484531,0.207433 c -0.192616,0 -0.370416,-0.01976 -0.518583,-0.04939 -0.153105,-0.01976 -0.276577,-0.04939 -0.345722,-0.08396 -0.0099,0 -0.01482,0 -0.01975,-0.0049 -0.02963,-0.0099 -0.05927,-0.01976 -0.08396,-0.02963 -0.09878,-0.02469 -0.187678,-0.05927 -0.246945,-0.09878 -0.03951,-0.01482 -0.07902,-0.03951 -0.113594,-0.06421 -0.360539,-0.187678 -0.671688,-0.459316 -0.903816,-0.785283 -0.06421,-0.07408 -0.118533,-0.158044 -0.162983,-0.242005 -0.04939,-0.06915 -0.09384,-0.153106 -0.123472,-0.246944 -0.03457,-0.04939 -0.06421,-0.118534 -0.0889,-0.192617 -0.04939,-0.113594 -0.09384,-0.271639 -0.118533,-0.459316 -0.03951,-0.162983 -0.05927,-0.360539 -0.05927,-0.572911 0,-0.207433 0.01976,-0.404989 0.05927,-0.572911 0.02469,-0.187677 0.06914,-0.340783 0.118533,-0.459316 0.02469,-0.07408 0.05433,-0.138289 0.0889,-0.192616 0.02963,-0.09384 0.07408,-0.1778 0.123472,-0.242006 0.04445,-0.0889 0.09878,-0.167922 0.162983,-0.242005 0.232128,-0.330906 0.543277,-0.597605 0.903816,-0.785283 0.03457,-0.02469 0.07408,-0.04939 0.113594,-0.06914 0.05927,-0.03951 0.148167,-0.06914 0.246945,-0.09878 0.02469,-0.0099 0.05433,-0.01976 0.08396,-0.02963 0.0049,0 0.0099,-0.0049 0.01975,-0.0049 0.06915,-0.03457 0.192617,-0.05927 0.345722,-0.07902 0.148167,-0.03457 0.325967,-0.05433 0.518583,-0.05433 0.197556,0 0.375355,0.01976 0.523522,0.05433 0.153105,0.01976 0.271639,0.04445 0.345722,0.07902 0.0099,0 0.01482,0.0049 0.01976,0.0049 0.02963,0.0099 0.05927,0.01976 0.08396,0.02963 0.09878,0.02963 0.182738,0.05927 0.246944,0.09878 0.03951,0.01976 0.07902,0.04445 0.113594,0.06914 0.360539,0.187678 0.671689,0.454377 0.903816,0.785283 0.06421,0.07408 0.118533,0.153105 0.162983,0.242005 0.04939,0.06421 0.09384,0.148167 0.123473,0.242006 0.03457,0.05433 0.06421,0.118533 0.0889,0.192616 0.04939,0.118533 0.09384,0.271639 0.118534,0.459316 0.03457,0.167922 0.05927,0.365478 0.05927,0.572911 0,0.212372 -0.02469,0.409928 -0.05927,0.572911 -0.02469,0.187677 -0.06915,0.345722 -0.118534,0.459316 -0.02469,0.07408 -0.05433,0.143228 -0.0889,0.192617 -0.02963,0.09384 -0.07408,0.177799 -0.123473,0.246944 -0.04445,0.08396 -0.09878,0.167922 -0.162983,0.242005 -0.232127,0.325967 -0.543277,0.597605 -0.903816,0.785283 -0.03457,0.02469 -0.07408,0.04939 -0.113594,0.06421 -0.06421,0.03951 -0.148167,0.07408 -0.246944,0.09878 -0.02469,0.0099 -0.05433,0.01976 -0.08396,0.02963 -0.0049,0.0049 -0.0099,0.0049 -0.01976,0.0049 -0.07408,0.03457 -0.192617,0.06421 -0.345722,0.08396 -0.148167,0.02963 -0.325966,0.04939 -0.523522,0.04939 z m 5.375608,0.0049 c -0.123472,0 -0.242005,-0.0099 -0.365477,-0.02469 -0.05927,-0.0099 -0.118534,-0.01976 -0.172861,-0.02963 -0.138289,-0.02469 -0.246945,-0.05433 -0.316089,-0.09384 -0.908755,-0.2667 -1.570566,-1.091494 -1.570566,-2.069393 v -3.239909 h 4.889494 v 3.239909 c 0,0.977899 -0.66675,1.802693 -1.575502,2.069393 -0.06914,0.03951 -0.177799,0.06914 -0.316088,0.09384 -0.05433,0.0099 -0.113595,0.01976 -0.172861,0.02963 -0.118533,0.01482 -0.242006,0.02469 -0.365478,0.02469 -0.0049,0 -0.0099,0 -0.01482,0 -0.0099,0 -0.01482,0 -0.01976,0 z m 2.851861,-0.212372 v -5.245096 h 2.67688 c 0.51364,0 0.95814,0.197555 1.1557,0.48895 0.0593,0.05433 0.11853,0.13335 0.16298,0.232127 0.0198,0.0247 0.0395,0.06421 0.0593,0.103717 0.0198,0.04939 0.0444,0.103716 0.0593,0.162983 0.0593,0.167922 0.0889,0.3556 0.0889,0.553155 0,0.202494 -0.0296,0.390172 -0.0889,0.558094 -0.0148,0.05927 -0.0395,0.113595 -0.0593,0.162983 -0.0198,0.03951 -0.0395,0.07902 -0.0593,0.103717 -0.0445,0.09878 -0.10372,0.1778 -0.16298,0.232128 -0.084,0.123472 -0.21731,0.232127 -0.37536,0.316088 l 1.43228,2.331154 z m 4.68418,0 v -5.245096 h 2.36572 v 5.245096 z m 7.80061,0.158044 -2.68181,-1.876776 v 1.718732 h -2.36573 v -5.398201 l 2.67688,1.871837 v -1.718732 h 2.37066 z m 0.38735,-0.158044 v -5.245096 h 4.25732 v 1.931104 h -0.9779 v 1.387827 h 0.9779 v 1.926165 z m 5.43488,0.158044 c -0.52352,0 -0.94332,-0.414866 -0.94332,-0.92851 0,-0.508705 0.4198,-0.923572 0.94332,-0.923572 0.52353,0 0.94827,0.414867 0.94827,0.923572 0,0.513644 -0.42474,0.92851 -0.94827,0.92851 z m 1.18251,-0.158044 v -5.398201 l 2.83492,1.985431 2.83986,-1.985431 v 5.398201 h -2.36572 V 89.7 L 123.55724,90.030905 123.08805,89.7 v 1.407582 z m 6.07695,0 v -5.245096 h 4.25732 v 1.931104 h -0.9779 v 1.387827 h 0.9779 v 1.926165 z"
+    />
+  </g>
+</svg>          </a>
+          <div class="flex items-center space-x-6 rtl:space-x-reverse">
+              <a href="#" class="text-sm font-medium text-fg-brand hover:underline">Login</a>
+          </div>
+      </div>
+  </nav>
+</header>
+
+    <div class="container mx-auto max-w-4xl py-8">
+      <main>
+
+  <article
+    class="typeset"
+  />
+    <h1 class="py-3">{{ page.title }}</h1>
+{% renderPage %}
+</article>
+      </main>
+      
+    </div>
+
+<footer class="bg-stone-100 ">
+    <div class="w-full mx-auto max-w-4xl py-4 md:flex md:items-center md:justify-between">
+      <span class="text-sm text-body sm:text-center">© 2026 <a href="https://tambourine.me/" class="hover:underline">tambourine.me</a>. All Rights Reserved.
+    </span>
+    <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-body sm:mt-0">
+        <li>
+            <a href="/admin/login" class="hover:underline me-4 md:me-6">Login</a>
+        </li>
+
+    </ul>
+    </div>
+</footer>
+</div>
+  </body>
+</html>

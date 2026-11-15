@@ -6,10 +6,10 @@ import { createDb } from "~/db";
 import * as schema from "~/db/schema";
 
 export function createAuth(env: Env) {
-   const db = createDb(env.pages);
- return betterAuth({
-     basePath: "/auth",
- database: drizzleAdapter(db, {
+  const db = createDb(env.pages);
+  return betterAuth({
+    basePath: "/auth",
+    database: drizzleAdapter(db, {
       provider: "sqlite",
       schema,
     }),

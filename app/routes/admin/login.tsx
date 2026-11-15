@@ -26,23 +26,35 @@ export default function Login() {
 
     setError("");
     setLoading(true);
-
     try {
-      alert(password)
-      const { error } = await authClient.signIn.email({
+      const result = await authClient.signIn.email({
         email,
         password,
         callbackURL: "/",
       });
 
-      if (error) {
-        setError(error.message ?? "ログインに失敗しました。");
+      if (result.error) {
+        console.error("Login error:", result.error);
+
+        setError([
+          result.error.message,
+          result.error.status,
+          result.error.statusText,
+          result.error.code,
+        ].filter(Boolean).join("\n"));
+
         return;
       }
 
       navigate("/");
-    } catch {
-      setError("ログインに失敗しました。");
+    } catch (error) {
+      console.error("Login exception:", error);
+
+      setError(
+        error instanceof Error
+          ? `${error.name}: ${error.message}\n${error.stack ?? ""}`
+          : JSON.stringify(error, null, 2)
+      );
     } finally {
       setLoading(false);
     }
