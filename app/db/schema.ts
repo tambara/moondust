@@ -1,13 +1,31 @@
 import { relations } from "drizzle-orm";
 import { blob, index, integer, real, SQLiteColumn, sqliteTable, text, unique, uniqueIndex, type SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
+// ルーティング
+export const nodeTypes = ["file", "directory", "markdown", "number"] as const;
+
+
+export const nodes = sqliteTable("nodes", {
+  id: text("id").primaryKey(),
+  type: text("type").$type<(typeof nodeTypes)[number]>().notNull() // file / directory
+  // その他のメタデータ
+});
+
+export const entries = sqliteTable("entries", {
+  id: text("id").primaryKey(),
+  parentId: text("parent_id").notNull(),
+  nodeId: text("node_id").notNull().references(() => nodes.id),
+  name: text("name").notNull(),
+});
 
 // EAVテーブル
 export const valueTypes = ["text", "html", "markdown", "number"] as const;
 
 export const attributes = sqliteTable("attributes", {
   id: text("id").primaryKey(),
+  label: text("label").notNull(),
   name: text("name").notNull(),
-  description: text("description"),
+  position: integer("position").notNull(),
+  description: text("description").notNull().default(""),
   setting: text("setting", { mode: "json" }).$type<{
     title: string;
     description: string;
@@ -74,7 +92,7 @@ export const layouts = sqliteTable("layouts", {
   name: text("name").notNull().unique(),
   description: text("description"),
   body: text("body").notNull(),
-  // content_type: text("content_type").notNull(),
+  contentType: text("content_type").notNull(),
   // content_disposition: text("content_disposition").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
@@ -89,14 +107,18 @@ export const pagesRelations = relations(pages, ({ one, many }) => ({
   layout: one(layouts, {
     fields: [pages.layoutId],
     references: [layouts.id],
-  }), 
-   attributeValues: many(attributeValues),
+  }),
+  attributeValues: many(attributeValues),
 
 }));
 export const attributeValuesRelations = relations(attributeValues, ({ one }) => ({
   page: one(pages, {
     fields: [attributeValues.pageId],
     references: [pages.id],
+  }),
+  attribute: one(attributes, {
+    fields: [attributeValues.attributeId],
+    references: [attributes.id],
   }),
 }));
 
@@ -139,9 +161,15 @@ export const htmlClasses = sqliteTable(
 );
 
 // システム用
+export type SettingsMimeType = {
+  label: string;
+  value: string;
+};
+
+
 export const systemSettings = sqliteTable("system_settings", {
-  name: text("name").primaryKey().unique(),
-  value: text("value").notNull(),
+  name: text("name").primaryKey(),
+  value: text("value", { mode: "json" }).notNull(),
 });
 
 /*

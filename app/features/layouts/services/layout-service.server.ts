@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq, notInArray, sql } from "drizzle-orm";
 import { attributes, layouts, valueTypes } from "~/db/schema";
 import type { createDb } from "~/db";
 import { updateClasses, updateTailwind } from "~/features/html-classes/services/classes.server";
@@ -16,17 +16,21 @@ export async function createLayout(db: Database, data: Layout) {
       id: id,
       name: data.name,
       body: data.body,
+      contentType: data.contentType,
       createdAt: now,
       updatedAt: now,
     }),
-    db.insert(attributes).values(
+    ...(data.attributes.length ? [db.insert(attributes).values(
       data.attributes.map((attribute) => ({
         id: crypto.randomUUID(),
         layoutId: id,
+        label: attribute.label,
         name: attribute.name,
+        description: attribute.description ?? "",
+        position: attribute.position,
         valueType: attribute.valueType,
       }))
-    ),
+    )] : []),
   ]);
 
   await updateClasses(db, { recordType: "layouts", recordId: id, html: data.body })
@@ -39,26 +43,73 @@ export async function updateLayout(
   data: Layout,
 ) {
   const now = new Date();
+
+  const deleteAttributeIds = data.attributes.map((attribute) => attribute.id).filter((v): v is string => v != null)
+  console.log("data.attributesdata.attributesdata.attributes")
+  console.log(data.attributes.length)
+  console.log(data.attributes)
   await db.batch([
     db
       .update(layouts)
       .set({
         name: data.name,
+        contentType: data.contentType,
         body: data.body,
         updatedAt: now,
       })
       .where(eq(layouts.id, id)),
-    db
+    // TODO: attributeValueの削除
+    ...(deleteAttributeIds.length ? [db
       .delete(attributes)
-      .where(eq(attributes.layoutId, id)),
-    db.insert(attributes).values(
-      data.attributes.map((attribute) => ({
-        id: crypto.randomUUID(),
-        layoutId: id,
-        name: attribute.name,
-        valueType: attribute.valueType,
-      }))
-    ),
+      .where(and(
+        eq(attributes.layoutId, id),
+        notInArray(attributes.id, deleteAttributeIds),
+      ),
+      )] : [db
+        .delete(attributes)
+        .where(and(
+          eq(attributes.layoutId, id),
+        ),
+        )]),
+
+    // db.insert(attributes).values(
+    //   data.attributes.map((attribute) => ({
+    //     id: crypto.randomUUID(),
+    //     layoutId: id,
+    //     name: attribute.name,
+    //     valueType: attribute.valueType,
+    //   }))
+    // ),
+    ...(data.attributes.length ?
+      [
+        db.insert(attributes)
+          .values(data.attributes.map((attribute) => {
+            return {
+              id: attribute.id ?? crypto.randomUUID(),
+              layoutId: id,
+              position: attribute.position,
+              label: attribute.label,
+              description: attribute.description ?? "",
+              name: attribute.name,
+              valueType: attribute.valueType,
+            }
+          })
+          )
+          .onConflictDoUpdate({
+            target: [
+              attributes.layoutId,
+              attributes.name
+            ],
+            set: {
+              name: sql`excluded.name`,
+              position: sql`excluded.position`,
+              label: sql`excluded.label`,
+              description: sql`excluded.description`,
+              valueType: sql`excluded.value_type`,
+            },
+            setWhere: eq(attributes.layoutId, id),
+          })
+      ] : [])
   ]);
   await updateClasses(db, { recordType: "layouts", recordId: id, html: data.body })
   await updateTailwind(db)

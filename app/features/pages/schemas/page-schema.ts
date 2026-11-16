@@ -8,7 +8,7 @@ export const pageSchema = z.object({
   layoutId: z.string().min(1, "Layoutは必須です"),
   attributes: z.array(
     z.object({
-      attributeValueId: z.uuid().nullable(),
+      attributeValueId: z.uuid().nullish(),
       attributeId: z.uuid(),
       value: z.string(),
     })
@@ -19,7 +19,7 @@ function createPageAttributesSchema(
 ) {
   return z.array(
     z.object({
-      attributeValueId: z.uuid().nullable(),
+      attributeValueId: z.uuid().nullish(),
       attributeId: z.uuid(),
       value: z.string(),
     })

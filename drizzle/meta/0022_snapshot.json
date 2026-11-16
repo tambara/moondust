@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "96ee7aee-0ca1-430f-ad31-2dd295ca7d60",
-  "prevId": "32750b91-fbd3-43c2-ac8f-77dac88e6965",
+  "id": "41793a99-2b42-4b86-98b3-e63a24359fba",
+  "prevId": "f05aeccc-0a5d-46b3-b5da-cdde6d0d43b5",
   "tables": {
     "attribute_values": {
       "name": "attribute_values",
@@ -117,9 +117,23 @@
           "notNull": true,
           "autoincrement": false
         },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -128,8 +142,9 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
         },
         "setting": {
           "name": "setting",
@@ -288,6 +303,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -341,18 +363,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "body": {
-          "name": "body",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "layout_id": {
           "name": "layout_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "created_at": {
@@ -469,15 +484,7 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "system_settings_name_unique": {
-          "name": "system_settings_name_unique",
-          "columns": [
-            "name"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

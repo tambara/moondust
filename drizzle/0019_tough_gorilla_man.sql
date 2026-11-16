@@ -1,0 +1,1 @@
+ALTER TABLE `attributes` ADD `position` integer NOT NULL;

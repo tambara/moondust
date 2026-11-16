@@ -42,27 +42,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <TooltipProvider >
-          <div className="min-h-screen grid grid-cols-[64px_1fr] grid-rows-[64px_1fr]">
-            <aside className="p-2 row-span-3 bg-stone-500 flex flex-col items-center justify-between">
-              <div className="w-full">
+          <div className="relative min-h-screen grid grid-cols-[64px_1fr] grid-rows-[64px_1fr]">
+            <div>
+              <aside className="min-h-screen fixed left-0 w-[64px] top-0  p-2  bg-stone-500 flex flex-col items-center justify-between">
+                <div className="w-full">
 
-                <SidebarButton to="/" label="ルート" icon={Slash} />
+                  <SidebarButton to="/" label="ルート" icon={Slash} />
 
-              </div>
-              <div className="w-full space-y-1">
-                <SidebarButton to="/admin" label="ホーム" icon={HomeSimpleDoor} />
+                </div>
+                <div className="w-full space-y-1">
+                  <SidebarButton to="/admin" label="ホーム" icon={HomeSimpleDoor} />
 
-                <SidebarButton to="/admin/users" label="ユーザー" icon={User} />
-                <SidebarButton to="/admin/pages" label="ページ" icon={Post} />
-                <SidebarButton to="/admin/layouts" label="レイアウト" icon={LayoutLeft} />
-              </div>
+                  <SidebarButton to="/admin/users" label="ユーザー" icon={User} />
+                  <SidebarButton to="/admin/pages" label="ページ" icon={Post} />
+                  <SidebarButton to="/admin/layouts" label="レイアウト" icon={LayoutLeft} />
+                </div>
 
-              <div className="w-full">
-                <SidebarButton to="/admin/logout"  label="ログアウト" icon={LogOut} />
-              </div>
+                <div className="w-full">
+                  <SidebarButton to="/admin/logout" label="ログアウト" icon={LogOut} />
+                </div>
 
-            </aside>
-
+              </aside>
+            </div>
             <div className="min-h-screen grid grid-rows-[auto_1fr_auto]">
               <header className="flex h-14 items-center justify-between border-b px-6 bg-white">
                 <LoginStatus />

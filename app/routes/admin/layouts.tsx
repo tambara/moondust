@@ -31,32 +31,28 @@ export default function Layouts({ loaderData }: Route.ComponentProps) {
 
   }
   return <>
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">レイアウト管理</h1>
-          <Button >
-            <Link to="/admin/layouts/new">新規作成</Link>
-          </Button>
-        </div>
-        <ResourceList
-          title="レイアウト一覧"
-          items={loaderData.layouts}
-          getId={(user) => user.id}
-          renderItem={(user) => (
-            <>
-              <p className="font-medium">{user.name}</p>
-              <p className="truncate text-sm text-muted-foreground">
-                {user.id}
-              </p>
-            </>
-          )}
-          searchPlaceholder="レイアウトを検索..."
-          emptyMessage="レイアウトがありません"
-          onSearch={setSearch}
-          onEdit={(page) => navigate(`/admin/layouts/${page.id}/edit`)}
-          onDelete={handleDelete}
-        />
-      </section>
+    <section className="space-y-4">
+
+      <ResourceList
+        title="レイアウト一覧"
+        items={loaderData.layouts}
+        getId={(user) => user.id}
+        renderItem={(user) => (
+          <>
+            <p className="font-medium">{user.name}</p>
+            <p className="truncate text-sm text-muted-foreground">
+              {user.id}
+            </p>
+          </>
+        )}
+        searchPlaceholder="レイアウトを検索..."
+        emptyMessage="レイアウトがありません"
+        onSearch={setSearch}
+        onNew={() => `/admin/layouts/new`}
+        onEdit={(page) => `/admin/layouts/${page.id}/edit`}
+        onDelete={handleDelete}
+      />
+    </section>
   </>
 }
 

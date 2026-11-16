@@ -13,6 +13,7 @@ import { pageSchema } from "~/features/pages/schemas/page-schema";
 import { cloudflareContext } from "../../../workers/app";
 import { PageForm } from "~/features/pages/components/page-form";
 import type { Route } from "./+types/pages.new";
+import { UserForm } from "~/features/users/components/user-form";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
@@ -37,54 +38,38 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
-  const { createPage } = await import(
-    "~/features/pages/services/page-service.server"
+  const { createUser } = await import(
+    "~/features/users/services/user-service.server"
   );
 
-  await createPage(db, submission.value);
+  await createUser(db, submission.value);
 
   return redirect("/admin/pages");
 }
 
 export default function NewPage() {
-  const { layouts } = useLoaderData<typeof loader>();
   const lastResult = useActionData<typeof action>();
   const navigation = useNavigation();
-
-  // const [form, fields] = useForm({
-  //   lastResult,
-  //   shouldValidate: "onBlur",
-  //   shouldRevalidate: "onInput",
-  //   onValidate({ formData }) {
-  //     return parseWithZod(formData, {
-  //       schema: pageSchema,
-  //     });
-  //   },
-  // });
-
-  const isSubmitting = navigation.state === "submitting";
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Page新規作成</h1>
+        <h1 className="text-2xl font-bold">ユーザー新規作成</h1>
         <p className="text-sm text-muted-foreground">
-          ページを作成します。
+          ユーザーを作成します。
         </p>
       </div>
 
 
-      <PageForm
-      lastResult={lastResult}
+      <UserForm
+        lastResult={lastResult}
         defaultValue={{
-          title: "",
-          slug: "",
-          body: "",
-          layoutId: undefined,
+          name: "",
+          email: "",
+          role: "User",
         }}
-        layouts={layouts}
-        submitting={isSubmitting}
-        submitLabel="作成"
+        submitting={navigation.state === "submitting"}
+        submitLabel="更新"
       />
     </div>
   );

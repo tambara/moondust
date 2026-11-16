@@ -34,12 +34,6 @@ export default function Pages({ loaderData }: Route.ComponentProps) {
   }
   return <>
       <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">ページ管理</h1>
-          <Button >
-            <Link to="/admin/pages/new">新規作成</Link>
-          </Button>
-        </div>
         <ResourceList
           title="ページ一覧"
           items={loaderData.pages}
@@ -55,7 +49,8 @@ export default function Pages({ loaderData }: Route.ComponentProps) {
           searchPlaceholder="ページを検索..."
           emptyMessage="ペ０時がありません"
           onSearch={setSearch}
-          onEdit={(page) => navigate(`/admin/pages/${page.id}/edit`)}
+        onNew={() => `/admin/pages/new`}
+        onEdit={(page) => `/admin/pages/${page.id}/edit`}
           onDelete={handleDelete}
         />
       </section>

@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "8012cd38-4a23-447d-a665-4c3e1f27dfc1",
-  "prevId": "2ae3db09-95da-4983-b5cb-48a422acd325",
+  "id": "079e057f-409d-47a2-82aa-0e263238f06d",
+  "prevId": "3ff716ea-41ae-4acc-b2ce-29b6ad462d1e",
   "tables": {
     "attribute_values": {
       "name": "attribute_values",
@@ -117,15 +117,43 @@
           "notNull": true,
           "autoincrement": false
         },
-        "value_type": {
-          "name": "value_type",
+        "label": {
+          "name": "label",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "render_type": {
-          "name": "render_type",
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "setting": {
+          "name": "setting",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "value_type": {
+          "name": "value_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -153,7 +181,16 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "attributes_layout_id_name_unique": {
+          "name": "attributes_layout_id_name_unique",
+          "columns": [
+            "layout_id",
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "attributes_layout_id_layouts_id_fk": {
           "name": "attributes_layout_id_layouts_id_fk",
@@ -251,6 +288,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "body": {
           "name": "body",
           "type": "text",
@@ -311,18 +355,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "body": {
-          "name": "body",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "layout_id": {
           "name": "layout_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "created_at": {

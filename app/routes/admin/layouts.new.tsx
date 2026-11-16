@@ -1,15 +1,27 @@
 
-import { Form, redirect, useActionData, useLoaderData, useNavigation } from "react-router";
+import {  redirect,  } from "react-router";
 
 import { createDb } from "~/db";
 import { cloudflareContext } from "../../../workers/app";
-import { useForm } from "@conform-to/react";
-import { parseWithZod } from "@conform-to/zod/v4";
 import { layoutSchema } from "~/features/layouts/schemas/layout-schema";
 import { LayoutForm } from "~/features/layouts/components/layout-form";
 import type { Route } from "./+types/layouts";
 import { parseSubmission, report } from "@conform-to/react/future";
+import { eq } from "drizzle-orm";
+import { systemSettings, type SettingsMimeType } from "~/db/schema";
 
+export async function loader({ context }: Route.LoaderArgs) {
+  const { env } = context.get(cloudflareContext);
+  const db = createDb(env.pages);
+
+  const setting = await db.query.systemSettings.findFirst({
+    where: eq(systemSettings.name, "mime-types"),
+  },);
+
+
+const mimeTypes = setting?.value as SettingsMimeType[] | undefined;
+  return { mimeTypes: mimeTypes ?? [] }
+}
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const submission = parseSubmission(formData);
@@ -50,7 +62,8 @@ export default function NewLayout() {
 
       <LayoutForm
         defaultValue={{
-          name: "",
+                 contentType: "text/html",
+   name: "",
           body: "",
           attributes: [],
         }}

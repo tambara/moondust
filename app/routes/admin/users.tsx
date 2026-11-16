@@ -34,36 +34,31 @@ export default function Users({ loaderData }: Route.ComponentProps) {
 
   }
   return <>
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">ユーザー管理</h1>
-          <Button >
-            <Link to="/admin/users/new">新規作成</Link>
-          </Button>
-        </div>
-        <ResourceList
-          title="ページ一覧"
-          items={loaderData?.users || []}
-          getId={(user) => user.id}
-          renderItem={(user) => (
-            <>
-              <p className="font-medium">{user.name}</p>
-              <p className="truncate text-sm text-muted-foreground">
-                {user.email}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                権限：{user.role ?? "user"}
-                {user.id === loaderData?.currentUser?.session.id && "（自分）"}
-              </p>
-            </>
-          )}
-          searchPlaceholder="ユーザーを検索..."
-          emptyMessage="ユーザーがありません"
-          onSearch={setSearch}
-          onEdit={(page) => navigate(`/admin/users/${page.id}/edit`)}
-          onDelete={handleDelete}
-        />
-      </section>
+    <section className="space-y-4">
+      <ResourceList
+        title="ユーザー一覧"
+        items={loaderData?.users || []}
+        getId={(user) => user.id}
+        renderItem={(user) => (
+          <>
+            <p className="font-medium">{user.name}</p>
+            <p className="truncate text-sm text-muted-foreground">
+              {user.email}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              権限：{user.role ?? "user"}
+              {user.id === loaderData?.currentUser?.session.id && "（自分）"}
+            </p>
+          </>
+        )}
+        searchPlaceholder="ユーザーを検索..."
+        emptyMessage="ユーザーがありません"
+        onSearch={setSearch}
+        onNew={() => `/admin/users/new`}
+        onEdit={(page) => `/admin/users/${page.id}/edit`}
+        onDelete={handleDelete}
+      />
+    </section>
   </>
 }
 

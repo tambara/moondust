@@ -1,8 +1,6 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import {
   Card,
   CardContent,
@@ -10,7 +8,6 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { ResourceList } from "./resource-list";
-import { useNavigate } from "react-router";
 
 type CrudManagerProps<T, CreateData, UpdateData> = {
   title: string;
@@ -141,7 +138,6 @@ export function CrudManager<T, CreateData, UpdateData>({
       setSaving(false);
     }
   }
-const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -173,7 +169,8 @@ const navigate = useNavigate();
         loading={loading}
         saving={saving}
         onSearch={setSearch}
-        onEdit={(page) => navigate(`/admin/users/${getId(page)}/edit`)}
+        onNew={() => `/admin/layouts/new`}
+        onEdit={(page) => `/admin/users/${getId(page)}/edit`}
         onDelete={handleDelete}
       />
 

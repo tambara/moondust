@@ -125,7 +125,7 @@ export function PageForm({
         {layoutId &&
           layouts
             .find((layout) => layout.id === layoutId)
-            ?.attributes.map((attribute, index) => (
+            ?.attributes.sort((a,b)=>a.position - b.position).map((attribute, index) => (
               <div key={attribute.id} className="space-y-2">
                 <Label>
                   {attribute.name} {attribute.valueType}
@@ -188,11 +188,15 @@ function AttributeField({
     type="hidden"
     name={`attributes[${index}].attributeId`}
     value={attribute.id}
-  /><input
+  />
+  {attributeValue?.id ? 
+  <input
     type="hidden"
     name={`attributes[${index}].attributeValueId`}
     value={attributeValue?.id}
   />
+: <></>
+  }
 </>
   switch (attribute.valueType) {
     case "number":

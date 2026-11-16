@@ -22,6 +22,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
@@ -37,6 +38,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { createPage } = await import(
     "~/features/pages/services/page-service.server"
   );
+  console.log("222222222222222")
 
   await createPage(db, parsed.data, parsed.layoutItem);
 

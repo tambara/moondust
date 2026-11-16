@@ -25,6 +25,7 @@
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { Hono } from "hono";
 import { createContext } from "react-router";
+import { escape } from 'he';
 
 export const cloudflareContext = createContext<{
   env: Env;
@@ -43,7 +44,8 @@ const app = new Hono<{ Bindings: Env }>();
 import { eq } from "drizzle-orm";
 import { createDb } from "~/db";
 import { pages, systemSettings } from "~/db/schema";
-import { renderLayout } from "~/lib/template";
+import { engine } from "~/lib/template";
+import { LiquidError } from "liquidjs";
 
 const api = new Hono<{ Bindings: Env }>();
 api.get("/tailwind.css", async (c) => {
@@ -57,7 +59,7 @@ api.get("/tailwind.css", async (c) => {
     return c.notFound();
   }
 
-  return c.body(tailwindcss.value, 200, {
+  return c.body(tailwindcss.value as string, 200, {
     "Content-Type": "text/css; charset=utf-8",
   });
 });
@@ -71,6 +73,11 @@ api.get("/:slug", async (c) => {
     where: eq(pages.slug, slug),
     with: {
       layout: true,
+      attributeValues: {
+        with: {
+          attribute: true,
+        },
+      },
     },
   });
 
@@ -80,21 +87,44 @@ api.get("/:slug", async (c) => {
 
   if (page.layout !== null) {
 
-    const html = await renderLayout(page.layout.body, {
-      page
-    });
+    try {
+      const layoutTemplates = engine.parse(page.layout.body);
 
-    // const locals = {
-    //   page,
-    //   renderPage: (data = {}) =>
-    //     ejs.render(page.body, {
-    //       ...locals,
-    //       ...data,
-    //     }),
-    // };
+      const field = Object.fromEntries(
+        page.attributeValues.map(item => [
+          item.attribute.name,
+          item.valueText,
+        ])
+      )
 
-    // const html = ejs.render(page.layout.body, locals);
-    return c.html(html);
+      const scope = {
+        page: {
+          id: page.id,
+          slug: page.slug,
+          title: page.title,
+          layoutId: page.layoutId,
+          createdAt: page.createdAt,
+          updatedAt: page.updatedAt,
+          field: field
+        }
+      }
+      const html = await engine.render(layoutTemplates, {
+        debug: escape(JSON.stringify({ page, scope }, null, 2)),
+        ...scope
+      });
+
+      console.log(page.layout.contentType)
+
+      return c.body(html, 200, {
+        "Content-Type": `${page.layout.contentType}; charset=utf-8`,
+      });
+
+    } catch (error) {
+      if (error instanceof LiquidError) {
+        return c.text(error.message);
+      }
+      throw error
+    }
   } else {
     return c.text("Layout is not found");
   }

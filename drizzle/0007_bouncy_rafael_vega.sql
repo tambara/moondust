@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `system_settings_name_unique` ON `system_settings` (`name`);

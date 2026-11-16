@@ -9,6 +9,10 @@ export async function parsePageForm(
   db: Database,
   formData: FormData,
 ) {
+
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!")
+  console.log(formData)
+
   const submission = parseSubmission(formData);
 
   // 基本項目の検証
@@ -49,7 +53,8 @@ export async function parsePageForm(
   const result = schema.safeParse(submission.payload);
 
   if (!result.success) {
-    return {
+    console.log(result.error.issues)
+  return {
       success: false as const,
       result: report(submission, {
         error: {

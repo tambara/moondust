@@ -8,8 +8,10 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import { layoutSchema } from "~/features/layouts/schemas/layout-schema";
 import { LayoutForm } from "~/features/layouts/components/layout-form";
 import { eq } from "drizzle-orm";
-import { layouts } from "~/db/schema";
+import { layouts, systemSettings, type SettingsMimeType } from "~/db/schema";
 import { parseSubmission, report } from "@conform-to/react/future";
+import { output } from "zod";
+import { CodeBlock, CodeBlockHeader, CodeBlockTitle, CodeBlockActions, CodeBlockCopyButton, CodeBlockContent } from "~/components/ui/code-block";
 
 export async function loader({ context, params }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
@@ -17,7 +19,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
 
   const layout = await db.query.layouts.findFirst({
     where: eq(layouts.id, params.id),
-     with: {
+    with: {
       attributes: true,
     },
 
@@ -27,7 +29,13 @@ export async function loader({ context, params }: Route.LoaderArgs) {
     throw new Response("Page not found", { status: 404 });
   }
 
-  return { layout };
+  const setting = await db.query.systemSettings.findFirst({
+    where: eq(systemSettings.name, "mime-types"),
+  },);
+
+
+  const mimeTypes = setting?.value as SettingsMimeType[] | undefined;
+  return { layout, mimeTypes: mimeTypes ?? [] }
 }
 
 export async function action({ params, request, context }: Route.ActionArgs) {
@@ -35,6 +43,11 @@ export async function action({ params, request, context }: Route.ActionArgs) {
   const submission = parseSubmission(formData);
   const result = layoutSchema.safeParse(submission.payload);
 
+  console.log("!!!!!!!!!!!")
+  console.log(formData)
+
+  console.log([...formData.entries()]);
+  console.log(formData.getAll("attributes[0].label"));
   if (!result.success) {
     return {
       result: report(submission, {
@@ -62,7 +75,18 @@ export async function action({ params, request, context }: Route.ActionArgs) {
 export default function EditPage() {
   const { layout } = useLoaderData<typeof loader>();
 
-  return (
+  return (<>
+
+    <CodeBlock>
+      <CodeBlockHeader>
+        <CodeBlockTitle>レコード</CodeBlockTitle>
+        <CodeBlockActions>
+          <CodeBlockCopyButton value={JSON.stringify(layout, null, 2)} />
+        </CodeBlockActions>
+      </CodeBlockHeader>
+      <CodeBlockContent className="max-h-48 scroll-fade-y" lineNumbers>{JSON.stringify(layout, null, 2)}</CodeBlockContent>
+    </CodeBlock>
+
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">レイアウト編集</h1>
@@ -73,15 +97,14 @@ export default function EditPage() {
 
       <LayoutForm
         defaultValue={{
+          contentType: layout.contentType,
           name: layout.name,
           body: layout.body,
-          attributes: layout.attributes.map(e => ({
-            name: e.name,
-            valueType: e.valueType,
-          })),
+          attributes: layout.attributes,
         }}
         submitLabel="更新"
       />
     </div>
+  </>
   );
 }
