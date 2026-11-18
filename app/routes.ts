@@ -2,7 +2,7 @@ import { type RouteConfig, index, layout, route } from "@react-router/dev/routes
 
 export default [
 
-  layout("routes/admin/layout.tsx", [
+    route("admin/", "routes/admin/index.tsx"),
     route("admin/login", "routes/admin/login.tsx"),
     route("auth/*", "routes/api.auth.$.ts"),
     route("admin/pages", "routes/admin/pages.tsx"),
@@ -21,8 +21,11 @@ export default [
     route("admin/users/new", "routes/admin/users.new.tsx"),
     route("admin/users/:id/edit", "routes/admin/users.edit.tsx"),
 
+    route("admin/routes", "routes/admin/routes.tsx"),
+    route("admin/routes/new", "routes/admin/routes.new.tsx"),
+    route("admin/routes/:id/edit", "routes/admin/routes.edit.tsx"),
+
     route("admin/export", "routes/admin/export.ts"),
 
-  ]),
   // route(":slug", "routes/pag.tsx"),
 ] satisfies RouteConfig;

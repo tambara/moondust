@@ -97,7 +97,7 @@ export default function Login() {
               <p className="text-sm text-destructive">{error}</p>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" isPending={loading} isDisabled={loading}>
               {loading ? "ログイン中..." : "ログイン"}
             </Button>
           </form>

@@ -162,6 +162,41 @@
       "when": 1794808702124,
       "tag": "0022_high_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1794831729910,
+      "tag": "0023_strong_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1794892683150,
+      "tag": "0024_demonic_invaders",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1794924100958,
+      "tag": "0025_brave_shockwave",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1794969150619,
+      "tag": "0026_sharp_garia",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "6",
+      "when": 1794969813877,
+      "tag": "0027_bouncy_stone_men",
+      "breakpoints": true
     }
   ]
 }

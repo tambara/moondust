@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
+import { Link as AriaLink } from "react-aria-components";
 
 type ResourceListProps<T> = {
   title: string;
@@ -50,13 +50,10 @@ export function ResourceList<T>({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{title}</h1>
  
-        <Button
-          render={<Link to={onNew()} />}
-          size="sm"
-          variant="outline"
-        >
-          新規作成
-        </Button>
+
+<AriaLink className="react-aria-Button button-base" href={onNew()} >
+  新規作成
+</AriaLink>
       </div>
       <Card>
         <CardHeader>
@@ -74,13 +71,13 @@ export function ResourceList<T>({
               }}
             />
 
-            <Button
+            {/* <Button
               variant="outline"
               onClick={() => void refresh()}
               disabled={loading}
             >
               検索
-            </Button>
+            </Button> */}
           </div>
 
           {loading ? (
@@ -110,21 +107,26 @@ export function ResourceList<T>({
                     size="sm"
                     variant="outline"
                   > */}
-                    <Button
+
+<AriaLink className="react-aria-Button button-base" href={onEdit(item)} target="_blank">
+  編集
+</AriaLink>
+
+                    {/* <Button
                       render={<Link to={onEdit(item)} />}
                       size="sm"
                       variant="outline"
                     >
                       編集
-                    </Button>
-                    <Button
+                    </Button> */}
+                    {/* <Button
                       size="sm"
                       variant="destructive"
                       disabled={saving}
                       onClick={() => void onDelete(item)}
                     >
                       削除
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
               ))}

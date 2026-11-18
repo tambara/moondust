@@ -1,7 +1,6 @@
 
 import { useForm } from '@conform-to/react/future';
 
-import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { HtmlEditor } from "~/features/admin/components/html-editor";
@@ -10,6 +9,7 @@ import { Form, useActionData, useLoaderData, useNavigation } from "react-router"
 import { layoutAttributeSchema, layoutSchema } from "../schemas/layout-schema";
 import { valueTypes } from "~/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Button } from '~/components/area/button';
 
 
 type AttributeProps = {
@@ -191,7 +191,7 @@ export function LayoutForm({
 
               <Button
                 type="button"
-                disabled={!layoutAttributeSchema.safeParse(firstAttribute).success}
+                isDisabled={!layoutAttributeSchema.safeParse(firstAttribute).success}
                 onClick={() => {
                   intent.insert({
                     name: fields.attributes.name,
@@ -305,7 +305,7 @@ export function LayoutForm({
             </Card>
           </div>
         </div>
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" isPending={submitting}>
           {submitting ? "保存中..." : submitLabel}
         </Button>
       </div>

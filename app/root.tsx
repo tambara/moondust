@@ -7,16 +7,24 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import { Code, HomeSimpleDoor, LogOut, Slash, User } from 'iconoir-react';
+import { Code, Folder, HomeSimpleDoor, LogOut, Slash, User, Walking } from 'iconoir-react';
 import { Post } from 'iconoir-react';
 import { LayoutLeft } from 'iconoir-react';
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import { LoginStatus } from "./features/auth/components/login-status";
-import { Button, buttonVariants } from "./components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
+import { buttonVariants } from "./components/ui/button";
 import { cn } from "cn";
+import { Tooltip, TooltipTrigger } from "react-aria-components";
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+
+  if (url.pathname === "/") {
+    throw new Response("Not Found", { status: 404 });
+  }
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -41,40 +49,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <TooltipProvider >
-          <div className="relative min-h-screen grid grid-cols-[64px_1fr] grid-rows-[64px_1fr]">
-            <div>
-              <aside className="min-h-screen fixed left-0 w-[64px] top-0  p-2  bg-stone-500 flex flex-col items-center justify-between">
-                <div className="w-full">
+        <div className="relative min-h-screen grid grid-cols-[64px_1fr] grid-rows-[64px_1fr]">
+          <div>
+            <aside className="min-h-screen fixed left-0 w-[64px] top-0  p-2  bg-stone-500 flex flex-col items-center justify-between">
+              <div className="w-full">
 
-                  <SidebarButton to="/" label="ルート" icon={Slash} />
+                <SidebarButton to="/" label="ルート" icon={Slash} reloadDocument />
 
-                </div>
-                <div className="w-full space-y-1">
-                  <SidebarButton to="/admin" label="ホーム" icon={HomeSimpleDoor} />
+              </div>
+              <div className="w-full space-y-1">
+                <SidebarButton to="/admin" label="ホーム" icon={HomeSimpleDoor} />
 
-                  <SidebarButton to="/admin/users" label="ユーザー" icon={User} />
-                  <SidebarButton to="/admin/pages" label="ページ" icon={Post} />
-                  <SidebarButton to="/admin/layouts" label="レイアウト" icon={LayoutLeft} />
-                </div>
+                <SidebarButton to="/admin/users" label="ユーザー" icon={User} />
+                <SidebarButton to="/admin/pages" label="ページ" icon={Post} />
+                <SidebarButton to="/admin/layouts" label="レイアウト" icon={LayoutLeft} />
+                <SidebarButton to="/admin/routes" label="ディレクトリ" icon={Walking} />
+              </div>
 
-                <div className="w-full">
-                  <SidebarButton to="/admin/logout" label="ログアウト" icon={LogOut} />
-                </div>
+              <div className="w-full">
+                <SidebarButton to="/admin/logout" label="ログアウト" icon={LogOut} />
+              </div>
 
-              </aside>
-            </div>
-            <div className="min-h-screen grid grid-rows-[auto_1fr_auto]">
-              <header className="flex h-14 items-center justify-between border-b px-6 bg-white">
-                <LoginStatus />
-              </header>
-              <main className="mx-auto max-w-4xl bg-white px-3 w-full py-8">
-                {children}
-              </main>
-              <footer></footer>
-            </div>
+            </aside>
           </div>
-        </TooltipProvider>
+          <div className="min-h-screen grid grid-rows-[auto_1fr_auto]">
+            <header className="flex h-14 items-center justify-between border-b px-6 bg-white">
+              <LoginStatus />
+            </header>
+            <main className="mx-auto max-w-4xl bg-white px-3 w-full py-8">
+              {children}
+            </main>
+            <footer></footer>
+          </div>
+        </div>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -116,31 +123,33 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 }
 
 
-function SidebarButton({ label, icon: Icon, to }: {
+
+function SidebarButton({ label, icon: Icon, to, reloadDocument = false, }: {
   label: string;
   icon: React.ElementType;
   to: string;
+  reloadDocument?: boolean;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
 
-          <Link
-            to={to}
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "w-full h-auto aspect-square group")}
-          />
-        }
+    <TooltipTrigger
+
+    >
+      <Link
+        reloadDocument={reloadDocument}
+        to={to}
+        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "w-full h-auto aspect-square group")}
       >
+
         <Icon
           strokeWidth={1.4}
           className="size-8 transition-transform duration-300 group-hover:scale-110"
         />
-      </TooltipTrigger>
+      </Link>
 
-      <TooltipContent side="right">
+      <Tooltip>
         {label}
-      </TooltipContent>
-    </Tooltip>
+      </Tooltip>
+    </TooltipTrigger>
   );
 }

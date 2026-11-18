@@ -1,21 +1,45 @@
 import { relations } from "drizzle-orm";
-import { blob, index, integer, real, SQLiteColumn, sqliteTable, text, unique, uniqueIndex, type SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
+import { blob, index, integer, real, SQLiteColumn, sqliteTable, text, unique, uniqueIndex, type AnySQLiteColumn, type SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
 // ルーティング
 export const nodeTypes = ["file", "directory", "markdown", "number"] as const;
+export const ROOT_ID = "00000000-0000-0000-0000-000000000002"
 
 
-export const nodes = sqliteTable("nodes", {
+// export const nodes = sqliteTable("nodes", {
+//   id: text("id").primaryKey(),
+//   type: text("type").$type<(typeof nodeTypes)[number]>().notNull(), // file / directory
+//   pageId: text("page_id").notNull(),
+// });
+
+export const routes = sqliteTable("routes", {
   id: text("id").primaryKey(),
-  type: text("type").$type<(typeof nodeTypes)[number]>().notNull() // file / directory
-  // その他のメタデータ
-});
-
-export const entries = sqliteTable("entries", {
-  id: text("id").primaryKey(),
-  parentId: text("parent_id").notNull(),
-  nodeId: text("node_id").notNull().references(() => nodes.id),
-  name: text("name").notNull(),
-});
+  parentId: text("parent_id").notNull()
+    .references((): AnySQLiteColumn => routes.id),
+  // description: text("description").notNull().default(""),
+  slug: text("slug").notNull(),
+  pageId: text("page_id")
+    .notNull()
+    .references(() => pages.id),
+  // type: text("type").$type<(typeof nodeTypes)[number]>().notNull() // file / directory
+},
+  (table) => [
+    unique().on(table.parentId, table.slug),
+  ]
+);
+export const routesRelations = relations(routes, ({ one, many }) => ({
+  parent: one(routes, {
+    fields: [routes.parentId],
+    references: [routes.id],
+    relationName: "parent_children",
+  }),
+  children: many(routes, {
+    relationName: "parent_children",
+  }),
+  page: one(pages, {
+    fields: [routes.pageId],
+    references: [pages.id],
+  }),
+}));
 
 // EAVテーブル
 export const valueTypes = ["text", "html", "markdown", "number"] as const;
@@ -76,12 +100,14 @@ export const attributeValues = sqliteTable("attribute_values", {
     .on(table.pageId, table.attributeId),
 ]);
 
-
+// inode相当
+// TODO: nodesに改名
 export const pages = sqliteTable("pages", {
   id: text("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
-  // body: text("body").notNull(),
+  // リダイレクト先などに使用
+  block: text("block").notNull(),
   layoutId: text("layout_id").notNull().references(() => layouts.id),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),

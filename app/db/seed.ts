@@ -1,7 +1,7 @@
 import { getPlatformProxy } from "wrangler";
 import { createAuth } from "~/lib/auth.server";
 import { createDb } from ".";
-import { systemSettings } from "./schema";
+import { indexNodes, ROOT_ID, systemSettings } from "./schema";
 
 const platform = await getPlatformProxy<Env>({
     configPath: "./wrangler.jsonc",
@@ -42,6 +42,10 @@ try {
         ],
     })
 
+    // await db.insert(indexNodes).values({
+    //     id: ROOT_ID,
+
+    // })
 
 
 } catch (e) {

@@ -46,6 +46,7 @@ import { createDb } from "~/db";
 import { pages, systemSettings } from "~/db/schema";
 import { engine } from "~/lib/template";
 import { LiquidError } from "liquidjs";
+import { index } from "drizzle-orm/gel-core";
 
 const api = new Hono<{ Bindings: Env }>();
 api.get("/tailwind.css", async (c) => {
@@ -64,10 +65,14 @@ api.get("/tailwind.css", async (c) => {
   });
 });
 
-api.get("/:slug", async (c) => {
+api.get("/:slug{.+}?", async (c) => {
   const db = createDb(c.env.pages);
 
-  const slug = c.req.param("slug");
+  let slug = c.req.param("slug") ?? "/";
+  if (slug === "index.htm" || slug === "index.html") {
+    slug = "/"
+  }
+
 
   const page = await db.query.pages.findFirst({
     where: eq(pages.slug, slug),
@@ -139,11 +144,20 @@ app.all("*", async (c) => {
     ctx: c.executionCtx as unknown as ExecutionContext,
   });
 
+  console.log("[Request]", c.req.method, c.req.path);
 
   const response = await requestHandler(c.req.raw, routerContext);
+  console.log("[React Router]", {
+    url: c.req.url,
+    status: response.status,
+    statusText: response.statusText,
+    contentType: response.headers.get("Content-Type"),
+  });
+
 
   // React Routerが404ならHonoにフォールバック
   if (response.status === 404) {
+    console.log("[Fallback] Hono");
     return api.fetch(c.req.raw, c.env, c.executionCtx);
   }
 
