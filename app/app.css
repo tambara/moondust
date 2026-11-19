@@ -3,8 +3,6 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
-@plugin "tailwindcss-react-aria-components";
-
 @custom-variant dark (&:is(.dark *));
 
 @theme {

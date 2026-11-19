@@ -16,7 +16,7 @@ import "./app.css";
 import { LoginStatus } from "./features/auth/components/login-status";
 import { buttonVariants } from "./components/ui/button";
 import { cn } from "cn";
-import { Tooltip, TooltipTrigger } from "react-aria-components";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -131,10 +131,8 @@ function SidebarButton({ label, icon: Icon, to, reloadDocument = false, }: {
   reloadDocument?: boolean;
 }) {
   return (
-
-    <TooltipTrigger
-
-    >
+    <Tooltip>
+      <TooltipTrigger render={
       <Link
         reloadDocument={reloadDocument}
         to={to}
@@ -146,10 +144,11 @@ function SidebarButton({ label, icon: Icon, to, reloadDocument = false, }: {
           className="size-8 transition-transform duration-300 group-hover:scale-110"
         />
       </Link>
+} />
+      <TooltipContent>
+        <p> {label}</p>
+      </TooltipContent>
+    </Tooltip>
 
-      <Tooltip>
-        {label}
-      </Tooltip>
-    </TooltipTrigger>
   );
 }

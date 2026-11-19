@@ -8,7 +8,7 @@ import {
 } from "react-router";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { pages, layouts } from "~/db/schema";
+import { pages, layouts, routes } from "~/db/schema";
 import { createDb } from "~/db";
 import { pageSchema } from "~/features/pages/schemas/page-schema";
 import { cloudflareContext } from "../../../workers/app";
@@ -34,12 +34,17 @@ export async function loader({ context, params }: Route.LoaderArgs) {
       attributeValues: true,
     },
   });
+  const pageRoute = await db.select().from(routes).where(
+     eq(routes.pageId, params.id)
+  ) ?? [];
 
   if (!page) {
     throw new Response("Page not found", { status: 404 });
   }
 
-  return { page, layouts: layoutItems };
+  const routesItem = await db.select().from(routes)
+
+  return { routes: routesItem, pageRoute, page, layouts: layoutItems };
 }
 
 export async function action({ params, request, context }: Route.ActionArgs) {
@@ -67,7 +72,7 @@ export async function action({ params, request, context }: Route.ActionArgs) {
 
 
 export default function EditPage() {
-  const { page, layouts } = useLoaderData<typeof loader>();
+  const { page, routes, pageRoute, layouts } = useLoaderData<typeof loader>();
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -81,10 +86,11 @@ export default function EditPage() {
       <PageForm
         defaultValue={{
           title: page.title,
-          slug: page.slug,
           layoutId: page.layoutId,
           attributeValues: page.attributeValues
         }}
+        pageRoute={pageRoute}
+        routes={routes}
         layouts={layouts}
         submitLabel="更新"
       />

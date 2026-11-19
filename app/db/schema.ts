@@ -13,12 +13,11 @@ export const ROOT_ID = "00000000-0000-0000-0000-000000000002"
 
 export const routes = sqliteTable("routes", {
   id: text("id").primaryKey(),
-  parentId: text("parent_id").notNull()
+  parentId: text("parent_id")
     .references((): AnySQLiteColumn => routes.id),
   // description: text("description").notNull().default(""),
   slug: text("slug").notNull(),
   pageId: text("page_id")
-    .notNull()
     .references(() => pages.id),
   // type: text("type").$type<(typeof nodeTypes)[number]>().notNull() // file / directory
 },
@@ -104,10 +103,9 @@ export const attributeValues = sqliteTable("attribute_values", {
 // TODO: nodesに改名
 export const pages = sqliteTable("pages", {
   id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
   // リダイレクト先などに使用
-  block: text("block").notNull(),
+  data: text("data").notNull(),
   layoutId: text("layout_id").notNull().references(() => layouts.id),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),

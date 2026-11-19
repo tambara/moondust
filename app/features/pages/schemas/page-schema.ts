@@ -4,7 +4,10 @@ export type LayoutWithAttributes = Awaited<ReturnType<typeof getLayoutsWithAttri
 
 export const pageSchema = z.object({
   title: z.string().trim().min(1, "タイトルは必須です"),
-  slug: z.string().trim().min(1, "Slugは必須です"),
+  path: z.string().trim()
+    .min(1, "Pathは必須です")
+    .max(255)
+    .regex(/^[a-zA-Z0-9._~/-]+$/),
   layoutId: z.string().min(1, "Layoutは必須です"),
   attributes: z.array(
     z.object({

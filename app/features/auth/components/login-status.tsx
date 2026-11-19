@@ -1,9 +1,8 @@
 
 import { authClient } from "~/lib/auth-client";
 import { Link } from "react-router";
-import {  Menu, MenuItem, MenuSection, MenuSeparator, MenuTrigger, SubmenuTrigger } from "~/components/area/Menu";
-import { Button } from "~/components/area/button";
 import { MoreHorizontal } from "lucide-react";
+import { Button } from "~/components/ui/button";
 
 export function LoginStatus() {
   const { data: session, isPending } = authClient.useSession();
@@ -18,38 +17,17 @@ export function LoginStatus() {
 
   if (!session) {
     return (
-      <Button  >
-        <Link to="/admin/login">ログイン</Link>
+      <Button render={<Link to="/admin/login">ログイン</Link>} >
+        
       </Button>
     );
   }
 
   const isAdmin = session.user.role === "admin";
-  return (<MenuTrigger>
+  return (
   <Button aria-label="Actions" variant="secondary">
     {session.user.name}
   </Button>
-  <Menu>
-
-    <MenuItem onAction={() => alert('open')}>Open</MenuItem>
-    <MenuItem onAction={() => alert('rename')}>Rename…</MenuItem>
-    <MenuItem onAction={() => alert('duplicate')}>Duplicate</MenuItem>
-    <MenuItem onAction={() => alert('delete')}>Delete…</MenuItem>
-    <SubmenuTrigger>
-      <MenuItem>Share</MenuItem>
-      <Menu>
-        <MenuItem>Email</MenuItem>
-        <MenuItem>SMS</MenuItem>
-        <MenuItem>Instagram</MenuItem>
-      </Menu>
-    </SubmenuTrigger>
-    <MenuSeparator />
-    <MenuSection selectionMode="multiple" defaultSelectedKeys={['files']}>
-      <MenuItem id="files">Show files</MenuItem>
-      <MenuItem id="folders">Show folders</MenuItem>
-    </MenuSection>
-  </Menu>
-</MenuTrigger>
 )
   // return (
   //   <MenuTrigger>

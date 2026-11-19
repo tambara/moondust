@@ -42,7 +42,10 @@ export default function Pages({ loaderData }: Route.ComponentProps) {
             <>
               <p className="font-medium">{user.title}</p>
               <p className="truncate text-sm text-muted-foreground">
-                {user.slug}
+                ID:{user.id}
+              </p>
+              <p className="truncate text-sm text-muted-foreground">
+               作成日:{user.createdAt}
               </p>
             </>
           )}

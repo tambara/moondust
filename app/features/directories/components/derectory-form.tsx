@@ -1,6 +1,5 @@
 
 import { useForm } from "@conform-to/react/future";
-import { Button } from "~/components/area/button";
 import { Input } from "~/components/ui/input";
 import { CodeMirrorMarkdownEditor } from "@latentic/live-markdown";
 import { useState } from "react";
@@ -9,31 +8,22 @@ import { Form, useActionData, useNavigation } from "react-router";
 import "@latentic/live-markdown/styles.css";
 import { HtmlEditor } from "~/features/admin/components/html-editor";
 import { Textarea } from "~/components/ui/textarea";
-import { AutocompleteSelect, Select, SelectItem } from "~/components/area/Select";
 import { ChevronDown, Settings2 } from "lucide-react";
-import { Autocomplete, useFilter } from "react-aria-components/Autocomplete";
-import { ListBox, ListBoxItem } from "~/components/area/ListBox";
-import { Label, SelectValue } from "react-aria-components/Select";
-import { SearchField } from "~/components/area/SearchField";
-import { DialogTrigger } from "react-aria-components/Popover";
-import { Switch } from "~/components/area/Switch";
-import { Popover } from "~/components/area/Popover";
-import { Menu, MenuItem, MenuSection, MenuTrigger } from "~/components/area/Menu";
-import type { Selection } from "react-aria-components";
-import { PathInput } from "~/features/admin/components/PathInput";
+import { Label } from "~/components/ui/label";
+import { Button } from "~/components/ui/button";
 
 type DirectoryFormProps = {
   defaultValue: {
     path: string;
   };
 
- routes: {
+  routes: {
     id: string;
     parentId: string;
     // description: string;
     pageId: string;
     name: string;
-}[],
+  }[],
   submitLabel?: string;
 };
 
@@ -137,7 +127,7 @@ export function DirectoryForm({
         </div>
 
         <div className="space-y-2">
-{/*     
+          {/*     
               <PathInput
                 items={states}
                 selectedItems={selectedItems}
@@ -157,8 +147,8 @@ export function DirectoryForm({
             {fields.path.errors}
           </p>
         </div>
-    
-        <Button type="submit" isPending={submitting} isDisabled={submitting}>
+
+        <Button type="submit" disabled={submitting}>
           {submitting ? "保存中..." : submitLabel}
         </Button>
       </div>

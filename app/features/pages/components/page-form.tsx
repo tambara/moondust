@@ -1,6 +1,5 @@
 
 import { useForm } from "@conform-to/react/future";
-import { Button } from "~/components/area/button";
 import { Input } from "~/components/ui/input";
 import { CodeMirrorMarkdownEditor } from "@latentic/live-markdown";
 import { useState } from "react";
@@ -9,28 +8,16 @@ import { Form, useActionData, useNavigation } from "react-router";
 import "@latentic/live-markdown/styles.css";
 import { HtmlEditor } from "~/features/admin/components/html-editor";
 import { Textarea } from "~/components/ui/textarea";
-import { AutocompleteSelect, Select, SelectItem } from "~/components/area/Select";
-import { ChevronDown, FileCode, FileJson, FileText, Settings2 } from "lucide-react";
-import { Autocomplete, useFilter } from "react-aria-components/Autocomplete";
-import { ListBox, ListBoxItem } from "~/components/area/ListBox";
-import { Label, SelectValue } from "react-aria-components/Select";
-import { SearchField } from "~/components/area/SearchField";
-import { DialogTrigger } from "react-aria-components/Popover";
-import { Switch } from "~/components/area/Switch";
-import { Popover } from "~/components/area/Popover";
-import { Menu, MenuItem, MenuSection, MenuTrigger } from "~/components/area/Menu";
-import { TreeLoadMoreItem, type Selection } from "react-aria-components";
-import { PathInput } from "~/features/admin/components/PathInput";
-import { RouteInput } from "~/features/admin/components/RouteInput";
-import { Tree, TreeItem } from "~/components/area/Tree";
-import { Collection } from 'react-aria-components/Collection';
-import { useAsyncList } from 'react-aria-components/useAsyncList';
-import { TreeExpander, TreeIcon, TreeLabel, TreeNode, TreeNodeContent, TreeNodeTrigger, TreeProvider, TreeView } from "~/components/kibo-ui/tree";
+import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
+import { BranchTree, type Branch } from "~/components/branch-tree/branch-tree";
+import { NavArrowDown } from "iconoir-react";
+import type { NotNull } from "drizzle-orm";
 
 type PageFormProps = {
   defaultValue: {
     title: string;
-    slug: string;
     layoutId: string;
     attributeValues: Array<{
       id: string;
@@ -47,6 +34,19 @@ type PageFormProps = {
   };
   layouts: LayoutWithAttributes[];
   submitLabel?: string;
+  routes: {
+    id: string;
+    parentId: string | null;
+    slug: string;
+    pageId: string | null;
+  }[],
+  pageRoute: {
+    id: string;
+    parentId: string | null;
+    slug: string;
+    pageId: string | null;
+  }[]
+
 };
 interface Character {
   name: string
@@ -81,8 +81,11 @@ const pokemons: Character[] = [
 export function PageForm({
   defaultValue,
   layouts,
+  routes,
+  pageRoute,
   submitLabel = "保存",
 }: PageFormProps) {
+
   // const [body, setBody] = useState(fields.body.value ?? "");
   const lastResult = useActionData();
   const navigation = useNavigation();
@@ -95,91 +98,63 @@ export function PageForm({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
-  const [slug, setSlug] = useState(defaultValue.slug);
-  const [selectedItems, setSelectedItems] = useState<typeof states>([]);
 
-  const states = [
-    { id: 'AL', name: 'Alabama' },
-    { id: 'AK', name: 'Alaska' },
-    { id: 'AZ', name: 'Arizona' },
-    { id: 'AR', name: 'Arkansas' },
-    { id: 'CA', name: 'California' },
-    { id: 'CO', name: 'Colorado' },
-    { id: 'CT', name: 'Connecticut' },
-    { id: 'DE', name: 'Delaware' },
-    { id: 'DC', name: 'District of Columbia' },
-    { id: 'FL', name: 'Florida' },
-    { id: 'GA', name: 'Georgia' },
-    { id: 'HI', name: 'Hawaii' },
-    { id: 'ID', name: 'Idaho' },
-    { id: 'IL', name: 'Illinois' },
-    { id: 'IN', name: 'Indiana' },
-    { id: 'IA', name: 'Iowa' },
-    { id: 'KS', name: 'Kansas' },
-    { id: 'KY', name: 'Kentucky' },
-    { id: 'LA', name: 'Louisiana' },
-    { id: 'ME', name: 'Maine' },
-    { id: 'MD', name: 'Maryland' },
-    { id: 'MA', name: 'Massachusetts' },
-    { id: 'MI', name: 'Michigan' },
-    { id: 'MN', name: 'Minnesota' },
-    { id: 'MS', name: 'Mississippi' },
-    { id: 'MO', name: 'Missouri' },
-    { id: 'MT', name: 'Montana' },
-    { id: 'NE', name: 'Nebraska' },
-    { id: 'NV', name: 'Nevada' },
-    { id: 'NH', name: 'New Hampshire' },
-    { id: 'NJ', name: 'New Jersey' },
-    { id: 'NM', name: 'New Mexico' },
-    { id: 'NY', name: 'New York' },
-    { id: 'NC', name: 'North Carolina' },
-    { id: 'ND', name: 'North Dakota' },
-    { id: 'OH', name: 'Ohio' },
-    { id: 'OK', name: 'Oklahoma' },
-    { id: 'OR', name: 'Oregon' },
-    { id: 'PA', name: 'Pennsylvania' },
-    { id: 'RI', name: 'Rhode Island' },
-    { id: 'SC', name: 'South Carolina' },
-    { id: 'SD', name: 'South Dakota' },
-    { id: 'TN', name: 'Tennessee' },
-    { id: 'TX', name: 'Texas' },
-    { id: 'UT', name: 'Utah' },
-    { id: 'VT', name: 'Vermont' },
-    { id: 'VA', name: 'Virginia' },
-    { id: 'WA', name: 'Washington' },
-    { id: 'WV', name: 'West Virginia' },
-    { id: 'WI', name: 'Wisconsin' },
-    { id: 'WY', name: 'Wyoming' }
-  ];
-
-  const starWarsList = useAsyncList<Character>({
-    async load({ signal, filterText }) {
-      // 通信待ちの再現(signal は fetch ではないので、ここでは未使用でOK)
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      const items = filterText
-        ? starWars.filter((c) =>
-          c.name.toLowerCase().includes(filterText.toLowerCase()),
-        )
-        : starWars;
-
-      return { items };
-    },
-  });
-  const pokemonList = useAsyncList<Character>({
-    async load({ signal, filterText }) {
-      // 通信待ちの再現(signal は fetch ではないので、ここでは未使用でOK)
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      const items = filterText
-        ? pokemons.filter((c) =>
-          c.name.toLowerCase().includes(filterText.toLowerCase()),
-        )
-        : pokemons;
-
-      return { items };
-    },
-  });
+  // const branches: Branch[] = [
+  //   {
+  //     id: "br-main",
+  //     name: "/",
+  //     state: "active",
+  //     updatedAt: "2026-11-18T08:30:00Z",
+  //   },
+  //   {
+  //     id: "br-staging",
+  //     name: "blog",
+  //     parent: "br-main",
+  //     state: "active",
+  //     updatedAt: "2026-11-17T14:12:00Z",
+  //   },
+  //   {
+  //     id: "br-dev",
+  //     name: "service",
+  //     parent: "br-main",
+  //     state: "idle",
+  //     updatedAt: "2026-11-16T03:45:00Z",
+  //   },
+  //   {
+  //     id: "br-feature-auth",
+  //     name: "photos",
+  //     parent: "br-dev",
+  //     state: "active",
+  //     updatedAt: "2026-11-18T06:05:00Z",
+  //   },
+  //   {
+  //     id: "br-feature-search",
+  //     name: "feature",
+  //     parent: "br-dev",
+  //     state: "suspended",
+  //     updatedAt: "2026-11-10T11:20:00Z",
+  //   },
+  //   {
+  //     id: "br-fix-migration",
+  //     name: "fix",
+  //     parent: "br-staging",
+  //     state: "idle",
+  //     updatedAt: "2026-11-14T09:00:00Z",
+  //   },
+  //   {
+  //     id: "br-preview-pr-142",
+  //     name: "preview",
+  //     parent: "br-feature-auth",
+  //     // state と updatedAt は省略可能なので、未設定のケースも入れています
+  //   },
+  //   {
+  //     id: "br-old-experiment",
+  //     name: "experiment",
+  //     parent: "br-main",
+  //     state: "suspended",
+  //     updatedAt: "2026-09-02T00:00:00Z",
+  //   },
+  // ];
   return (
     <Form id={form.id}
       // onSubmit={handleSubmit}
@@ -207,159 +182,7 @@ export function PageForm({
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor={fields.slug.id}>Slug</Label>
-"
-    <TreeProvider
-      defaultExpandedIds={["src", "components", "ui"]}
-      onSelectionChange={(ids) => console.log("Selected:", ids)}
-    >
-      <TreeView>
-        <TreeNode nodeId="src">
-          <TreeNodeTrigger>
-            <TreeExpander hasChildren />
-            <TreeIcon hasChildren />
-            <TreeLabel>src</TreeLabel>
-          </TreeNodeTrigger>
-          <TreeNodeContent hasChildren>
-            <TreeNode level={1} nodeId="components">
-              <TreeNodeTrigger>
-                <TreeExpander hasChildren />
-                <TreeIcon hasChildren />
-                <TreeLabel>components</TreeLabel>
-              </TreeNodeTrigger>
-              <TreeNodeContent hasChildren>
-                <TreeNode level={2} nodeId="ui">
-                  <TreeNodeTrigger>
-                    <TreeExpander hasChildren />
-                    <TreeIcon hasChildren />
-                    <TreeLabel>ui</TreeLabel>
-                  </TreeNodeTrigger>
-                  <TreeNodeContent hasChildren>
-                    <TreeNode level={3} nodeId="button.tsx">
-                      <TreeNodeTrigger>
-                        <TreeExpander />
-                        <TreeIcon icon={<FileCode className="h-4 w-4" />} />
-                        <TreeLabel>button.tsx</TreeLabel>
-                      </TreeNodeTrigger>
-                    </TreeNode>
-                    <TreeNode level={3} nodeId="card.tsx">
-                      <TreeNodeTrigger>
-                        <TreeExpander />
-                        <TreeIcon icon={<FileCode className="h-4 w-4" />} />
-                        <TreeLabel>card.tsx</TreeLabel>
-                      </TreeNodeTrigger>
-                    </TreeNode>
-                    <TreeNode isLast level={3} nodeId="dialog.tsx">
-                      <TreeNodeTrigger>
-                        <TreeExpander />
-                        <TreeIcon icon={<FileCode className="h-4 w-4" />} />
-                        <TreeLabel>dialog.tsx</TreeLabel>
-                      </TreeNodeTrigger>
-                    </TreeNode>
-                  </TreeNodeContent>
-                </TreeNode>
-                <TreeNode isLast level={2} nodeId="layout">
-                  <TreeNodeTrigger>
-                    <TreeExpander hasChildren />
-                    <TreeIcon hasChildren />
-                    <TreeLabel>layout</TreeLabel>
-                  </TreeNodeTrigger>
-                  <TreeNodeContent hasChildren>
-                    <TreeNode level={3} nodeId="header.tsx">
-                      <TreeNodeTrigger>
-                        <TreeExpander />
-                        <TreeIcon icon={<FileCode className="h-4 w-4" />} />
-                        <TreeLabel>header.tsx</TreeLabel>
-                      </TreeNodeTrigger>
-                    </TreeNode>
-                    <TreeNode isLast level={3} nodeId="footer.tsx">
-                      <TreeNodeTrigger>
-                        <TreeExpander />
-                        <TreeIcon icon={<FileCode className="h-4 w-4" />} />
-                        <TreeLabel>footer.tsx</TreeLabel>
-                      </TreeNodeTrigger>
-                    </TreeNode>
-                  </TreeNodeContent>
-                </TreeNode>
-              </TreeNodeContent>
-            </TreeNode>
-          </TreeNodeContent>
-        </TreeNode>
-        <TreeNode nodeId="public">
-          <TreeNodeTrigger>
-            <TreeExpander hasChildren />
-            <TreeIcon hasChildren />
-            <TreeLabel>public</TreeLabel>
-          </TreeNodeTrigger>
-          <TreeNodeContent hasChildren>
-            <TreeNode isLast level={1} nodeId="images">
-              <TreeNodeTrigger>
-                <TreeExpander hasChildren />
-                <TreeIcon hasChildren />
-                <TreeLabel>images</TreeLabel>
-              </TreeNodeTrigger>
-              <TreeNodeContent hasChildren>
-                <TreeNode level={2} nodeId="logo.svg">
-                  <TreeNodeTrigger>
-                    <TreeExpander />
-                    <TreeIcon icon={<FileText className="h-4 w-4" />} />
-                    <TreeLabel>logo.svg</TreeLabel>
-                  </TreeNodeTrigger>
-                </TreeNode>
-                <TreeNode isLast level={2} nodeId="hero.png">
-                  <TreeNodeTrigger>
-                    <TreeExpander />
-                    <TreeIcon icon={<FileText className="h-4 w-4" />} />
-                    <TreeLabel>hero.png</TreeLabel>
-                  </TreeNodeTrigger>
-                </TreeNode>
-              </TreeNodeContent>
-            </TreeNode>
-          </TreeNodeContent>
-        </TreeNode>
-        <TreeNode nodeId="package.json">
-          <TreeNodeTrigger>
-            <TreeExpander />
-            <TreeIcon icon={<FileJson className="h-4 w-4" />} />
-            <TreeLabel>package.json</TreeLabel>
-          </TreeNodeTrigger>
-        </TreeNode>
-        <TreeNode nodeId="tsconfig.json">
-          <TreeNodeTrigger>
-            <TreeExpander />
-            <TreeIcon icon={<FileJson className="h-4 w-4" />} />
-            <TreeLabel>tsconfig.json</TreeLabel>
-          </TreeNodeTrigger>
-        </TreeNode>
-        <TreeNode isLast nodeId="README.md">
-          <TreeNodeTrigger>
-            <TreeExpander />
-            <TreeIcon icon={<FileText className="h-4 w-4" />} />
-            <TreeLabel>README.md</TreeLabel>
-          </TreeNodeTrigger>
-        </TreeNode>
-      </TreeView>
-    </TreeProvider>
-
-          <RouteInput
-            items={states}
-            selectedItems={selectedItems}
-            onSelectedItemsChange={setSelectedItems}
-            getKey={item => item.id}
-            getLabel={item => item.name}
-            value={slug}
-            onValueChange={setSlug}
-            segmentsName="routes"
-            id={fields.slug.id}
-            name={fields.slug.name}
-            placeholder="例：標準レイアウト"
-            required
-          />
-          <p className="text-sm text-destructive">
-            {fields.slug.errors}
-          </p>
-        </div>
+        <SlugField routes={routes} pageRoute={pageRoute} fields={fields} />
         <div className="space-y-2">
           <Label htmlFor={fields.layoutId.id}>Layout</Label>
           <select
@@ -395,7 +218,7 @@ export function PageForm({
               </div>
             ))}
 
-        <Button type="submit" isPending={submitting} isDisabled={submitting}>
+        <Button type="submit" disabled={submitting}>
           {submitting ? "保存中..." : submitLabel}
         </Button>
       </div>
@@ -518,4 +341,131 @@ function AttributeField({
     default:
       return <p>未知のタイプです。</p>;
   }
+}
+
+// type PageForm = ReturnType<typeof useForm<typeof pageSchema>>
+// type PageFields = PageForm["fields"]
+
+function SlugField({ routes, pageRoute, fields }: {
+  routes: PageFormProps["routes"],
+  pageRoute: PageFormProps["pageRoute"],
+  fields: any
+}) {
+
+  const currentRoute = pageRoute.length ? routes.find(route => route.id === pageRoute[0].id) : null
+  const currentPaths: typeof currentRoute[] = []
+
+  function f(cr: NonNullable<typeof currentRoute>) {
+    const parent = routes.find(route => route.id === cr.parentId)
+    if (parent) {
+      f(parent)
+    }
+    currentPaths.push(cr)
+  }
+
+  if (currentRoute) {
+    f(currentRoute)
+  }
+
+  const currentSlug = pageRoute.length ? pageRoute[0].slug : ""
+  const currentPath = currentPaths.length ? currentPaths.slice(0, -1).map(item => item?.slug).join("/") : "/"
+  const [path, setPath] = useState(currentPath);
+  const [slugSelect, setSelectSlug] = useState(currentPath.length ? currentPath : "/");
+
+  const branches: Branch[] = []
+  function makeBranch(parentId: string|null) {
+    const children = routes.filter(route => route.parentId === parentId)
+    if (children.length) {
+      for (const child of children) {
+        branches.push({ id: child.id, name: child.slug, parent: parentId ?? "/" })
+        makeBranch(child.id)
+      }
+    }
+  }
+
+    branches.push({ id: "/", name: "/" })
+    // branches.push({ id:brachRoute.id, name: brachRoute.slug, parent: "/" })
+    makeBranch(null)
+
+  // const branches: Branch[] = [{
+  //   id: "/",
+  //   name: "/",
+  // }, ...routes.map(item => ({
+  //   id: item.id,
+  //   name: item.slug,
+  // }))]
+  const [resultPath, serResultPath] = useState([currentPath, currentSlug].join("/"))
+  const [slug, setSlug] = useState(currentSlug)
+
+  return <>
+    <div className="flex items-center">
+      <div className="font-mdedium">https://tambourin.me</div>
+      <Dialog>
+        <DialogTrigger render={<Button variant="ghost">{path}<NavArrowDown className="size-4 opacity-50" /></Button>} />
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>既存のルート</DialogTitle>
+            <DialogDescription>
+              すでに存在しているルートです。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
+            <BranchTree
+              branches={branches}
+              className="w-full"
+              onValueChange={(id) => {
+                function f(result: Branch[], current_id: string) {
+                  const current = branches.find(item => item.id === current_id)
+                  if (current) {
+                    if (current.parent) {
+                      f(result, current.parent)
+                    }
+                    result.push(current)
+                  }
+                }
+                const result: Branch[] = []
+                f(result, id)
+                setSelectSlug(id)
+
+                const names = result.map(item => item.name)
+                const text = names.length <= 1
+                  ? names.join("")
+                  : names[0] + names.slice(1).join("/") + "/";
+
+                setPath(text ?? "(エラー)")
+                serResultPath([text, currentSlug].join("/"))
+              }}
+              value={slugSelect}
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline">キャンセル</Button>} />
+            <DialogClose render={<Button variant="outline">OK</Button>} />
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <input type="hidden"
+        id={fields.path.id}
+        name={fields.path.name}
+        value={resultPath} />
+      <Input
+        value={slug}
+        defaultValue={slug}
+        placeholder="例：blog/20010101"
+        type="text"
+        required
+        onChange={e => {
+          setSlug(e.target.value)
+          serResultPath([path, e.target.value].join("/"))
+        }}
+      />
+    </div>
+    <p className="text-sm text-destructive">
+      {fields.path.errors}
+    </p>
+    <div>
+      {resultPath}
+    </div>
+  </>
 }

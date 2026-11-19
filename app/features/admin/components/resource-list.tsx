@@ -8,7 +8,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Link } from "react-router";
-import { Link as AriaLink } from "react-aria-components";
+import { Button } from "~/components/ui/button";
 
 type ResourceListProps<T> = {
   title: string;
@@ -49,11 +49,11 @@ export function ResourceList<T>({
     <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{title}</h1>
- 
+        <Button render={
+          <Link className="react-aria-Button button-base" to={onNew()} >
+            新規作成
+          </Link>} />
 
-<AriaLink className="react-aria-Button button-base" href={onNew()} >
-  新規作成
-</AriaLink>
       </div>
       <Card>
         <CardHeader>
@@ -108,9 +108,9 @@ export function ResourceList<T>({
                     variant="outline"
                   > */}
 
-<AriaLink className="react-aria-Button button-base" href={onEdit(item)} target="_blank">
-  編集
-</AriaLink>
+                    <Button render={<Link to={onEdit(item)}/>}>
+                      編集
+                    </Button>
 
                     {/* <Button
                       render={<Link to={onEdit(item)} />}

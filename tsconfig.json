@@ -1,14 +1,20 @@
 {
   "files": [],
   "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.cloudflare.json" }
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.cloudflare.json"
+    }
   ],
   "compilerOptions": {
-"paths": {
-  "~/*": ["./app/*"],
-      "~/components/*": ["./app/components/*"]
-},
+    "paths": {
+      "~/*": ["./app/*"],
+      "~/components/*": [
+        "./app/components/*"
+      ]
+    },
     "checkJs": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,

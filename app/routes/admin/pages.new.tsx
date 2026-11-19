@@ -7,6 +7,7 @@ import { createDb } from "~/db";
 import { cloudflareContext } from "../../../workers/app";
 import { PageForm } from "~/features/pages/components/page-form";
 import type { Route } from "./+types/pages.new";
+import { routes } from "~/db/schema";
 
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -18,11 +19,11 @@ export async function loader({ context }: Route.LoaderArgs) {
       attributes: true,
     },
   });
-  return { layouts: layoutItems };
+  const routesItem = await db.select().from(routes)
+  return { routes: routesItem ?? [], layouts: layoutItems };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
@@ -38,7 +39,6 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { createPage } = await import(
     "~/features/pages/services/page-service.server"
   );
-  console.log("222222222222222")
 
   await createPage(db, parsed.data, parsed.layoutItem);
 
@@ -46,7 +46,24 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function NewPage() {
-  const { layouts } = useLoaderData<typeof loader>();
+  const { routes, layouts } = useLoaderData<typeof loader>();
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(
+    parts.map(({ type, value }) => [type, value])
+  );
+
+  const formatted =
+    `${values.year}-${values.month}-${values.day}-${values.hour}-${values.minute}${values.second}`;
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -61,10 +78,11 @@ export default function NewPage() {
       <PageForm
         defaultValue={{
           title: "",
-          slug: "",
           layoutId: "",
-          attributeValues:[]
+          attributeValues: []
         }}
+        pageRoute={[]}
+        routes={routes}
         layouts={layouts}
         submitLabel="作成"
       />

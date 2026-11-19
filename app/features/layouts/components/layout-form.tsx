@@ -9,7 +9,7 @@ import { Form, useActionData, useLoaderData, useNavigation } from "react-router"
 import { layoutAttributeSchema, layoutSchema } from "../schemas/layout-schema";
 import { valueTypes } from "~/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Button } from '~/components/area/button';
+import { Button } from '~/components/ui/button';
 
 
 type AttributeProps = {
@@ -39,9 +39,6 @@ export function LayoutForm({
 
 
   const {mimeTypes } = useLoaderData()
-
-
-
 
   const actionData = useActionData();
   const [body, setBody] = useState(defaultValue.body || "");
@@ -191,7 +188,7 @@ export function LayoutForm({
 
               <Button
                 type="button"
-                isDisabled={!layoutAttributeSchema.safeParse(firstAttribute).success}
+               disabled={!layoutAttributeSchema.safeParse(firstAttribute).success}
                 onClick={() => {
                   intent.insert({
                     name: fields.attributes.name,
@@ -305,7 +302,7 @@ export function LayoutForm({
             </Card>
           </div>
         </div>
-        <Button type="submit" isPending={submitting}>
+        <Button type="submit" disabled={submitting}>
           {submitting ? "保存中..." : submitLabel}
         </Button>
       </div>
