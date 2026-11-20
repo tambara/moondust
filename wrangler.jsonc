@@ -19,17 +19,16 @@
 			"binding": "pages",
 			"database_name": "pages",
 			"database_id": "d2f30315-ce45-463e-a35c-12964f0f1959",
-	"migrations_dir": "drizzle",
-	
-// "migrations_pattern": "drizzle/*/migration.sql"	
-}
+			"migrations_dir": "drizzle",
+			"remote": false
+			// "migrations_pattern": "drizzle/*/migration.sql"	
+		}
 	],
-
-  "worker_loaders": [
-    {
-      "binding": "LOADER"
-    }
-  ]
+	//   "worker_loaders": [
+	//     {
+	//       "binding": "LOADER"
+	//     }
+	//   ]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

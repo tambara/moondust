@@ -7,7 +7,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import { Code, Folder, HomeSimpleDoor, LogOut, Slash, User, Walking } from 'iconoir-react';
+import { Code, DatabaseExport, Folder, HomeSimpleDoor, Import, LogOut, Slash, User, Walking } from 'iconoir-react';
 import { Post } from 'iconoir-react';
 import { LayoutLeft } from 'iconoir-react';
 
@@ -64,6 +64,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <SidebarButton to="/admin/pages" label="ページ" icon={Post} />
                 <SidebarButton to="/admin/layouts" label="レイアウト" icon={LayoutLeft} />
                 <SidebarButton to="/admin/routes" label="ディレクトリ" icon={Walking} />
+                <SidebarButton to="/admin/export" label="エクスポート" icon={DatabaseExport} />
+                <SidebarButton to="/admin/import" label="インポート" icon={Import} />
               </div>
 
               <div className="w-full">

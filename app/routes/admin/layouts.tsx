@@ -4,7 +4,6 @@ import { eq } from "drizzle-orm";
 import { createDb } from "~/db";
 
 import { layouts } from "~/db/schema";
-import { requireAdmin } from "~/lib/auth-guard.server";
 import { Button } from "~/components/ui/button";
 import { cloudflareContext } from "../../../workers/app";
 import type { Route } from "./+types/layouts";
@@ -13,6 +12,9 @@ import { ResourceList } from "~/features/admin/components/resource-list";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
+  const { requireAdmin } = await import(
+    "~/lib/auth-guard.server"
+  );
   await requireAdmin(request, env);
 
   const db = createDb(env.pages);

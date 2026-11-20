@@ -7,7 +7,6 @@ import {
   CardContent,
 } from "~/components/ui/card";
 import { cloudflareContext } from "../../../workers/app";
-import { requireUser } from "~/lib/auth-guard.server";
 import type { Route } from "./+types/scripts";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -15,6 +14,12 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const db = createDb(env.pages);
 
   const result = await db.select().from(scripts);
+
+
+  const { requireUser } = await import(
+    "~/lib/auth-guard.server"
+  );
+
   const session = await requireUser(request, env);
 
   return { scripts: result,

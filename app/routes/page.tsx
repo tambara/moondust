@@ -6,8 +6,6 @@ import { pages } from "~/db/schema";
 
 import type { Route } from "./+types/page";
 import { cloudflareContext } from "../../workers/app";
-import { getOptionalUser } from "~/lib/auth-guard.server";
-import { LoginStatus } from "~/features/auth/components/login-status";
 import { renderLayout } from "~/lib/render-layout.server";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {

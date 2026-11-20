@@ -2,12 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { createDb } from "~/db";
 import { routes, pages } from "~/db/schema";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "~/components/ui/card";
 import { cloudflareContext } from "../../../workers/app";
-import { requireUser } from "~/lib/auth-guard.server";
 import { useState } from "react";
 import { ResourceList } from "~/features/admin/components/resource-list";
 import type { Route } from "./+types/routes";
@@ -15,7 +10,9 @@ import type { Route } from "./+types/routes";
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
-
+  const { requireUser } = await import(
+    "~/lib/auth-guard.server"
+  );
   const result = await db.select().from(routes);
   const session = await requireUser(request, env);
 

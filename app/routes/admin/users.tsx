@@ -1,11 +1,9 @@
-import { Link, useNavigate } from "react-router";
-import { Button } from "~/components/ui/button";
+import {  useNavigate } from "react-router";
 import type { Route } from "./+types/users";
 import { createAuth } from "~/lib/auth.server";
 import { cloudflareContext } from "../../../workers/app";
 import { ResourceList } from "~/features/admin/components/resource-list";
 import { useState } from "react";
-import { requireAdmin } from "~/lib/auth-guard.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
@@ -19,6 +17,11 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     },
     headers: request.headers,
   });
+
+    const { requireAdmin } = await import(
+    "~/lib/auth-guard.server"
+  );
+
   const currentUser = await requireAdmin(request, env);
 
   return { users: result.users, currentUser: currentUser };

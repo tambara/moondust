@@ -9,14 +9,16 @@ import { createDb } from "~/db";
 import { cloudflareContext } from "../../../workers/app";
 import "~/lib/zod";
 import type { Route } from "./+types/users.edit";
-import { createAuth } from "~/lib/auth.server";
 import { UserForm } from "~/features/users/components/user-form";
 import { userSchema } from "better-auth";
-import { requireAdmin } from "~/lib/auth-guard.server";
 
 export async function loader({ request, context, params }: Route.LoaderArgs) {
   const { env } = context.get(cloudflareContext);
+  const { createAuth } = await import(
+    "~/lib/auth.server"
+  );
   const auth = createAuth(env);
+
 
   const user = await auth.api.getUser({
     query: {
@@ -29,7 +31,11 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
 
 export async function action({ request, params, context }: Route.ActionArgs) {
   const { env } = context.get(cloudflareContext);
-  const auth = createAuth(env);
+
+  const { requireAdmin } = await import(
+    "~/lib/auth-guard.server"
+  );
+
   const currentUser = await requireAdmin(request, env);
 
   const formData = await request.formData();

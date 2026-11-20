@@ -1,27 +1,37 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { blob, index, integer, real, SQLiteColumn, sqliteTable, text, unique, uniqueIndex, type AnySQLiteColumn, type SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
 // ルーティング
 export const nodeTypes = ["file", "directory", "markdown", "number"] as const;
-export const ROOT_ID = "00000000-0000-0000-0000-000000000002"
+const primaryKey = (name = "id") =>
+  text(name)
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID());
 
-
-// export const nodes = sqliteTable("nodes", {
-//   id: text("id").primaryKey(),
-//   type: text("type").$type<(typeof nodeTypes)[number]>().notNull(), // file / directory
-//   pageId: text("page_id").notNull(),
-// });
+const timestamps = () => ({
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date())
+    .$onUpdate(() => new Date()),
+})
 
 export const routes = sqliteTable("routes", {
-  id: text("id").primaryKey(),
+  id: primaryKey(),
   parentId: text("parent_id")
     .references((): AnySQLiteColumn => routes.id),
   // description: text("description").notNull().default(""),
   slug: text("slug").notNull(),
   pageId: text("page_id")
     .references(() => pages.id),
+  ...timestamps()
   // type: text("type").$type<(typeof nodeTypes)[number]>().notNull() // file / directory
 },
   (table) => [
+    // uniqueIndex("routes_single_root")
+    // .on(sql`1`)
+    // .where(sql`${table.parentId} IS NULL`),
     unique().on(table.parentId, table.slug),
   ]
 );
@@ -44,7 +54,7 @@ export const routesRelations = relations(routes, ({ one, many }) => ({
 export const valueTypes = ["text", "html", "markdown", "number"] as const;
 
 export const attributes = sqliteTable("attributes", {
-  id: text("id").primaryKey(),
+  id: primaryKey(),
   label: text("label").notNull(),
   name: text("name").notNull(),
   position: integer("position").notNull(),
@@ -58,13 +68,7 @@ export const attributes = sqliteTable("attributes", {
     .notNull(),
   layoutId: text("layout_id").references(() => layouts.id),
 
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date())
-    .$onUpdate(() => new Date()),
+  ...timestamps()
 },
   (table) => [
     unique().on(table.layoutId, table.name),
@@ -73,7 +77,8 @@ export const attributes = sqliteTable("attributes", {
 
 // 属性値
 export const attributeValues = sqliteTable("attribute_values", {
-  id: text("id").primaryKey(),
+  id: primaryKey(),
+
 
   attributeId: text("attribute_id")
     .notNull()
@@ -86,14 +91,8 @@ export const attributeValues = sqliteTable("attribute_values", {
   valueReal: real("value_real"),
   valueBlob: blob("value_blob"),
   valueJson: text("value_json"),
+  ...timestamps()
 
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date())
-    .$onUpdate(() => new Date()),
 }, (table) => [
   uniqueIndex("attribute_values_page_attribute_unique")
     .on(table.pageId, table.attributeId),
@@ -102,29 +101,24 @@ export const attributeValues = sqliteTable("attribute_values", {
 // inode相当
 // TODO: nodesに改名
 export const pages = sqliteTable("pages", {
-  id: text("id").primaryKey(),
+  id: primaryKey(),
   title: text("title").notNull(),
   // リダイレクト先などに使用
   data: text("data").notNull(),
   layoutId: text("layout_id").notNull().references(() => layouts.id),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
+  ...timestamps()
+
 });
 
 export const layouts = sqliteTable("layouts", {
-  id: text("id").primaryKey(),
+  id: primaryKey(),
   name: text("name").notNull().unique(),
   description: text("description"),
   body: text("body").notNull(),
   contentType: text("content_type").notNull(),
   // content_disposition: text("content_disposition").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date())
-    .$onUpdate(() => new Date()),
+  ...timestamps()
+
 });
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
@@ -161,20 +155,14 @@ export const layoutsRelations = relations(layouts, ({ many }) => ({
 export const htmlClasses = sqliteTable(
   "html_classes",
   {
-    id: text("id").primaryKey(),
+    id: primaryKey(),
     value: text("body").notNull(),
 
     recordType: text("record_type").notNull(),
     recordId: text("record_id").notNull(),
 
-    createdAt: integer("created_at", { mode: "timestamp" })
-      .notNull()
-      .$defaultFn(() => new Date()),
+    ...timestamps()
 
-    updatedAt: integer("updated_at", { mode: "timestamp" })
-      .notNull()
-      .$defaultFn(() => new Date())
-      .$onUpdate(() => new Date()),
   },
   (table) => [
     uniqueIndex("html_classes_record_unique").on(
@@ -194,24 +182,19 @@ export type SettingsMimeType = {
 export const systemSettings = sqliteTable("system_settings", {
   name: text("name").primaryKey(),
   value: text("value", { mode: "json" }).notNull(),
+  ...timestamps()
+
 });
 
 /*
 * Cloudflare Dynamic Worker
 */
 export const scripts = sqliteTable("scripts", {
-  id: text("id").primaryKey(),
+  id: primaryKey(),
   name: text("name").notNull().unique(),
   body: text("body").notNull(),
+  ...timestamps()
 
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date())
-    .$onUpdate(() => new Date()),
 });
 
 

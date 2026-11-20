@@ -40,11 +40,11 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 
 
-  const { createDirectory } = await import(
-    "~/features/directories/services/directory-service.server"
-  );
+  // const { createDirectory } = await import(
+  //   "~/features/directories/services/directory-service.server"
+  // );
 
-  await createDirectory(db, result.data);
+  // await createDirectory(db, result.data);
 
   return redirect("/admin/pages");
 }
@@ -60,14 +60,14 @@ export default function NewPage() {
           ページを作成します。
         </p>
       </div>
-
+{/* 
       <DirectoryForm
         defaultValue={{
           path: "",
         }}
         routes={routes}
         submitLabel="作成"
-      />
+      /> */}
     </div>
   );
 }

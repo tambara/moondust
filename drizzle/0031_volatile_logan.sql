@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `routes_single_root` ON `routes` (1) WHERE "routes"."parent_id" IS NULL;

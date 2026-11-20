@@ -36,11 +36,11 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { env } = context.get(cloudflareContext);
   const db = createDb(env.pages);
 
-  const { createScript } = await import(
-    "~/features/scripts/services/script-service.server"
-  );
+  // const { createScript } = await import(
+  //   "~/features/scripts/services/script-service.server"
+  // );
 
-  await createScript(db, submission.value);
+  // await createScript(db, submission.value);
 
   return redirect("/admin/scripts");
 }

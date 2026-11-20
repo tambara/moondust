@@ -41,9 +41,9 @@ const requestHandler = createRequestHandler(
 const app = new Hono<{ Bindings: Env }>();
 
 // PageはHonoで処理
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { createDb } from "~/db";
-import { pages, systemSettings } from "~/db/schema";
+import { pages, routes, systemSettings } from "~/db/schema";
 import { engine } from "~/lib/template";
 import { LiquidError } from "liquidjs";
 import { index } from "drizzle-orm/gel-core";
@@ -65,73 +65,111 @@ api.get("/tailwind.css", async (c) => {
   });
 });
 
-api.get("/:slug{.+}?", async (c) => {
+api.get("*", async (c) => {
+
   const db = createDb(c.env.pages);
 
-  let slug = c.req.param("slug") ?? "/";
+  async function findRouteFromPath(paths: string[]) {
+    let id = null
+    let result = null
+    for (const path of paths) {
+      result = await db.query.routes.findFirst({
+        where: and(id === null ? isNull(routes.parentId) : eq(routes.parentId, id),
+          eq(routes.slug, slug)),
+
+
+        with: {
+          page: {
+            with: {
+              layout: true,
+              attributeValues: {
+                with: {
+                  attribute: true,
+                },
+              }
+
+            }
+          },
+        },
+
+      })
+
+      if (!result) {
+        return null
+      }
+
+      id = result.id
+      // with: {
+      //   layout: true,
+      //   attributeValues: {
+      //     with: {
+      //       attribute: true,
+      //     },
+      //   },
+      // },
+    }
+    return result
+
+  }
+
+  let slug = c.req.path;
   if (slug === "index.htm" || slug === "index.html") {
     slug = "/"
   }
 
+  const paths = slug === "/" ? [] : slug.split("/")
 
-  const page = await db.query.pages.findFirst({
-    where: eq(pages.slug, slug),
-    with: {
-      layout: true,
-      attributeValues: {
-        with: {
-          attribute: true,
-        },
-      },
-    },
-  });
+  const route = await findRouteFromPath(["/", ...paths])
 
-  if (!page) {
-    return c.notFound();
+
+  if (!route || !route.page || !route.page.layout) {
+    console.log("DEBUG route:", JSON.stringify(route, null, 2));
+
+    return c.notFound()
   }
 
-  if (page.layout !== null) {
+  const page = route.page
 
-    try {
-      const layoutTemplates = engine.parse(page.layout.body);
+  try {
+    const layoutTemplates = engine.parse(page.layout.body);
 
-      const field = Object.fromEntries(
-        page.attributeValues.map(item => [
-          item.attribute.name,
-          item.valueText,
-        ])
-      )
+    const field = Object.fromEntries(
+      page.attributeValues.map(item => [
+        item.attribute.name,
+        item.valueText,
+      ])
+    )
 
-      const scope = {
-        page: {
-          id: page.id,
-          slug: page.slug,
-          title: page.title,
-          layoutId: page.layoutId,
-          createdAt: page.createdAt,
-          updatedAt: page.updatedAt,
-          field: field
-        }
+    console.log("[attributeValues]")
+    console.log(field)
+
+    const scope = {
+      slug,
+      page: {
+        id: page.id,
+        title: page.title,
+        layoutId: page.layoutId,
+        createdAt: page.createdAt,
+        updatedAt: page.updatedAt,
+        field: field
       }
-      const html = await engine.render(layoutTemplates, {
-        debug: escape(JSON.stringify({ page, scope }, null, 2)),
-        ...scope
-      });
-
-      console.log(page.layout.contentType)
-
-      return c.body(html, 200, {
-        "Content-Type": `${page.layout.contentType}; charset=utf-8`,
-      });
-
-    } catch (error) {
-      if (error instanceof LiquidError) {
-        return c.text(error.message);
-      }
-      throw error
     }
-  } else {
-    return c.text("Layout is not found");
+    const html = await engine.render(layoutTemplates, {
+      debug: escape(JSON.stringify({ page, scope }, null, 2)),
+      ...scope
+    });
+
+    console.log(page.layout.contentType)
+
+    return c.body(html, 200, {
+      "Content-Type": `${page.layout.contentType}; charset=utf-8`,
+    });
+
+  } catch (error) {
+    if (error instanceof LiquidError) {
+      return c.text(error.message);
+    }
+    throw error
   }
 });
 

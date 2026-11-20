@@ -1,7 +1,7 @@
 import { getPlatformProxy } from "wrangler";
 import { createAuth } from "~/lib/auth.server";
 import { createDb } from ".";
-import { indexNodes, ROOT_ID, systemSettings } from "./schema";
+import { attributes, attributeValues, layouts, pages,  routes, systemSettings } from "./schema";
 
 const platform = await getPlatformProxy<Env>({
     configPath: "./wrangler.jsonc",
@@ -19,6 +19,8 @@ try {
             role: "admin",
         },
     });
+
+    process.exit(0);
 
     console.log(result);
     console.log("Admin created:", result.user.email);
@@ -42,11 +44,66 @@ try {
         ],
     })
 
+    const [layoutRecord] = await db.insert(layouts).values({
+        name: "標準レイアウト",
+        description: "標準のレイアウト",
+        body: `
+    <!DOCTYPE html>
+    <html lang="ja">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title><%= title %></title>
+      </head>
+      <body>
+        <main>
+          <%- page.field.content %>
+        </main>
+      </body>
+    </html>
+  `,
+        contentType: "text/html",
+    }).returning({ id: layouts.id });
+
+    const [pageRecord] = await db.insert(pages).values({
+        title: "サンプルページ",
+        data: "",
+        layoutId: layoutRecord.id
+    }).returning({ id: pages.id });
+
+    const [attributeRecord] = await db.insert(attributes).values({
+        label: "ページ内容",
+        name: "content",
+        position: 0,
+        description: "ページの内容",
+        // setting: {
+        //     title: "概要",
+        //     description: "ページの説明を入力してください",
+        // },
+        valueType: "text",
+        layoutId: layoutRecord.id
+    }).returning({ id: attributes.id });
+
+    await db.insert(attributeValues).values({
+        id: crypto.randomUUID(),
+        attributeId: attributeRecord.id,
+        pageId: pageRecord.id,
+        valueText: "<h1>サンプルページ</h1><p>これはテストページです。</p>",
+    }).returning({ id: attributeValues.id });
+
     // await db.insert(indexNodes).values({
-    //     id: ROOT_ID,
+    //     id: ROOT_ROUTE_ID,
 
     // })
 
+    const [routeRecord] = await db.insert(routes).values({
+        // id: ROOT_ROUTE_ID,
+        parentId: null,
+        slug: "/",
+        pageId: pageRecord.id
+    }).returning({ id: routes.id });
+
+    console.log("Success");
 
 } catch (e) {
     console.log(e)

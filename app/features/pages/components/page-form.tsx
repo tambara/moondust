@@ -352,6 +352,16 @@ function SlugField({ routes, pageRoute, fields }: {
   fields: any
 }) {
 
+  function createCurrentPageRoutes(cr: typeof pageRoute[number], result:typeof routes[number][] = []) {
+    const parent = routes.find(route => route.id === cr.parentId)
+    if (parent) {
+      return createCurrentPageRoutes(parent, [...result, cr])
+    }
+    return [...result, cr]
+  }
+
+  const currentPageRoutes = createCurrentPageRoutes(pageRoute[0])
+
   const currentRoute = pageRoute.length ? routes.find(route => route.id === pageRoute[0].id) : null
   const currentPaths: typeof currentRoute[] = []
 
@@ -383,7 +393,6 @@ function SlugField({ routes, pageRoute, fields }: {
     }
   }
 
-    branches.push({ id: "/", name: "/" })
     // branches.push({ id:brachRoute.id, name: brachRoute.slug, parent: "/" })
     makeBranch(null)
 
@@ -398,6 +407,7 @@ function SlugField({ routes, pageRoute, fields }: {
   const [slug, setSlug] = useState(currentSlug)
 
   return <>
+ currentPageRoutes:  {currentPageRoutes.map(item=>item.slug).join("_/_")}
     <div className="flex items-center">
       <div className="font-mdedium">https://tambourin.me</div>
       <Dialog>
@@ -454,7 +464,6 @@ function SlugField({ routes, pageRoute, fields }: {
         defaultValue={slug}
         placeholder="例：blog/20010101"
         type="text"
-        required
         onChange={e => {
           setSlug(e.target.value)
           serResultPath([path, e.target.value].join("/"))

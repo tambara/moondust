@@ -24,23 +24,23 @@ import { env, WorkerEntrypoint } from "cloudflare:workers";
 // } satisfies ExportedHandler;
 
 
-export default {
-  async fetch(request: Request): Promise<Response> {
-    const worker = env.LOADER.load({
-      compatibilityDate: "2026-11-13",
-      mainModule: "worker.js",
-      modules: {
-        "worker.js": `
-          export default {
-            fetch() {
-              return new Response("Hello from Dynamic Worker!");
-            }
-          };
-        `,
-      },
-      globalOutbound: null,
-    });
+// export default {
+//   async fetch(request: Request): Promise<Response> {
+//     const worker = env.LOADER.load({
+//       compatibilityDate: "2026-11-13",
+//       mainModule: "worker.js",
+//       modules: {
+//         "worker.js": `
+//           export default {
+//             fetch() {
+//               return new Response("Hello from Dynamic Worker!");
+//             }
+//           };
+//         `,
+//       },
+//       globalOutbound: null,
+//     });
 
-    return worker.getEntrypoint().fetch(request);
-  },
-} satisfies ExportedHandler<Env>;
+//     return worker.getEntrypoint().fetch(request);
+//   },
+// } satisfies ExportedHandler<Env>;

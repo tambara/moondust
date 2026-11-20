@@ -8,10 +8,16 @@ export async function loader({ context }: Route.LoaderArgs) {
   const db = createDb(env.pages);
 
   const [
+    routes,
+    attributeValues,
+    attributes,
     pages,
     layouts,
     users,
   ] = await Promise.all([
+    db.select().from(schema.routes),
+    db.select().from(schema.attributeValues),
+    db.select().from(schema.attributes),
     db.select().from(schema.pages),
     db.select().from(schema.layouts),
     db.select().from(schema.user),
@@ -19,6 +25,9 @@ export async function loader({ context }: Route.LoaderArgs) {
 
   const data = {
     exportedAt: new Date().toISOString(),
+    routes,
+    attributeValues,
+    attributes,
     pages,
     layouts,
     users,
