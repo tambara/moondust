@@ -1,31 +1,19 @@
 
-import { Link, useLoaderData, useNavigate } from "react-router";
-import { eq } from "drizzle-orm";
-import { createDb } from "~/db";
+import { useNavigate } from "react-router";
 
-import { layouts } from "~/db/schema";
-import { Button } from "~/components/ui/button";
-import { cloudflareContext } from "../../../workers/app";
+import { type AppType } from "../../../workers/app";
 import type { Route } from "./+types/layouts";
 import { useState } from "react";
 import { ResourceList } from "~/features/admin/components/resource-list";
+import { hc } from "hono/client";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
-  const { env } = context.get(cloudflareContext);
-  const { requireAdmin } = await import(
-    "~/lib/auth-guard.server"
-  );
-  await requireAdmin(request, env);
-
-  const db = createDb(env.pages);
-  const items = await db.select().from(layouts);
-
-  return { layouts: items };
+export async function loader({ request }: Route.LoaderArgs) {
+  const app = hc<AppType>(new URL(request.url).origin);
+  const res = await app.api.layouts.$get();
+  return await res.json();
 }
 
-
 export default function Layouts({ loaderData }: Route.ComponentProps) {
-
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 

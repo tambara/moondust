@@ -4,23 +4,15 @@ import {
   useLoaderData,
 } from "react-router";
 import { createDb } from "~/db";
-import { cloudflareContext } from "../../../workers/app";
+import { cloudflareContext, type AppType } from "../../../workers/app";
 import { PageForm } from "~/features/pages/components/page-form";
 import type { Route } from "./+types/pages.new";
-import { routes } from "~/db/schema";
+import { hc } from "hono/client";
 
-
-export async function loader({ context }: Route.LoaderArgs) {
-  const { env } = context.get(cloudflareContext);
-  const db = createDb(env.pages);
-
-  const layoutItems = await db.query.layouts.findMany({
-    with: {
-      attributes: true,
-    },
-  });
-  const routesItem = await db.select().from(routes)
-  return { routes: routesItem ?? [], layouts: layoutItems };
+export async function loader({ request }: Route.LoaderArgs) {
+  const app = hc<AppType>(new URL(request.url).origin);
+  const res = await app.api.pages.new.$get();
+  return await res.json();
 }
 
 export async function action({ request, context }: Route.ActionArgs) {

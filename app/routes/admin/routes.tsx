@@ -1,24 +1,14 @@
-import { Link, useNavigate } from "react-router";
-import { createDb } from "~/db";
-import { routes, pages } from "~/db/schema";
-import { Button } from "~/components/ui/button";
-import { cloudflareContext } from "../../../workers/app";
+import { useNavigate } from "react-router";
+import {  type AppType } from "../../../workers/app";
 import { useState } from "react";
 import { ResourceList } from "~/features/admin/components/resource-list";
 import type { Route } from "./+types/routes";
+import { hc } from "hono/client";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const { env } = context.get(cloudflareContext);
-  const db = createDb(env.pages);
-  const { requireUser } = await import(
-    "~/lib/auth-guard.server"
-  );
-  const result = await db.select().from(routes);
-  const session = await requireUser(request, env);
-
-  return {
-    directories: result,
-  };
+  const app = hc<AppType>(new URL(request.url).origin);
+  const res = await app.api.routes.$get();
+  return await res.json();
 }
 
 export default function Pages({ loaderData }: Route.ComponentProps) {
@@ -33,7 +23,7 @@ export default function Pages({ loaderData }: Route.ComponentProps) {
       <section className="space-y-4">
         <ResourceList
           title="ディレクトリ一覧"
-          items={loaderData.directories}
+          items={loaderData.routes}
           getId={(user) => user.id}
           renderItem={(user) => (
             <>

@@ -1,31 +1,17 @@
-import { Link, useNavigate } from "react-router";
-import { createDb } from "~/db";
-import { pages, routes } from "~/db/schema";
-import { cloudflareContext } from "../../../workers/app";
+import {  useNavigate } from "react-router";
 import type { Route } from "./+types/pages";
 import { useState } from "react";
 import { ResourceList } from "~/features/admin/components/resource-list";
 import { TreeView, TreeViewDndContext, type TreeNodeNested } from "~/components/tree-view";
 import { ContextMenu, ContextMenuContent, ContextMenuGroup, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "~/components/ui/context-menu";
 import { PencilIcon, ShareIcon, TrashIcon } from "lucide-react";
+import { hc } from "hono/client";
+import type { AppType } from "../../../workers/app";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
-  const { env } = context.get(cloudflareContext);
-  const db = createDb(env.pages);
-
-    const { requireUser } = await import(
-    "~/lib/auth-guard.server"
-  );
-
-
-  const result = await db.select().from(pages);
-  const session = await requireUser(request, env);
-  const routesItem = await db.select().from(routes)
-
-  return {
-    pages: result,
-    routes: routesItem,
-  };
+export async function loader({ request }: Route.LoaderArgs) {
+  const app = hc<AppType>(new URL(request.url).origin);
+  const res = await app.api.pages.$get();
+  return await res.json();
 }
 
 export default function Pages({ loaderData }: Route.ComponentProps) {
@@ -112,7 +98,7 @@ export default function Pages({ loaderData }: Route.ComponentProps) {
               ID:{user.id}
             </p>
             <p className="truncate text-sm text-muted-foreground">
-              作成日:{user.createdAt.toLocaleString("ja-JP", {
+              作成日:{new Date(user.createdAt).toLocaleString("ja-JP", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",

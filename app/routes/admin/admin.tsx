@@ -4,7 +4,6 @@ import type { Route } from "./+types/admin";
 
 export const middleware: Route.MiddlewareFunction[] = [
     async ({ request, context }, next) => {
-        console.log("middleware")
        const { env } = context.get(cloudflareContext);
         const { requireAdmin } = await import(
             "~/lib/auth-guard.server"

@@ -20,7 +20,6 @@ try {
         },
     });
 
-    process.exit(0);
 
     console.log(result);
     console.log("Admin created:", result.user.email);

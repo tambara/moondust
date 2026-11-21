@@ -1,6 +1,17 @@
 import { z } from "zod";
 import type { getLayoutsWithAttributes, getLayoutWithAttributes } from "~/features/layouts/services/layout-service.server";
-export type LayoutWithAttributes = Awaited<ReturnType<typeof getLayoutsWithAttributes>>[number];
+
+// Date型をString型へ
+export type DateToString<T> = {
+  [K in keyof T]: T[K] extends Date
+    ? string
+    : T[K] extends object
+      ? DateToString<T[K]>
+      : T[K];
+};
+
+
+export type LayoutWithAttributes = DateToString<Awaited<ReturnType<typeof getLayoutsWithAttributes>>[number]>;
 
 export const pageSchema = z.object({
   title: z.string().trim().min(1, "タイトルは必須です"),

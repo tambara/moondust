@@ -22,185 +22,26 @@
 //   },
 // } satisfies ExportedHandler<Env>;
 
-import { createRequestHandler, RouterContextProvider } from "react-router";
 import { Hono } from "hono";
 import { createContext } from "react-router";
-import { escape } from 'he';
+
+import route_pages from "./routes/pages";
+import route_routes from "./routes/routes";
+// import route_users from "./routes/users";
+import route_open from "./routes/open";
+import route_layouts from "./routes/layouts";
 
 export const cloudflareContext = createContext<{
   env: Env;
   ctx: ExecutionContext;
 }>();
 
+const app = new Hono<{ Bindings: Env }>()
+  .route("/api/pages", route_pages)
+  .route("/api/routes", route_routes)
+  // .route("/api/users", route_users)
+  .route("/api/layouts", route_layouts)
+  .route("/", route_open)
 
-const requestHandler = createRequestHandler(
-  () => import("virtual:react-router/server-build"),
-  import.meta.env.MODE,
-);
-
-const app = new Hono<{ Bindings: Env }>();
-
-// PageはHonoで処理
-import { and, eq, isNull } from "drizzle-orm";
-import { createDb } from "~/db";
-import { pages, routes, systemSettings } from "~/db/schema";
-import { engine } from "~/lib/template";
-import { LiquidError } from "liquidjs";
-import { index } from "drizzle-orm/gel-core";
-
-const api = new Hono<{ Bindings: Env }>();
-api.get("/tailwind.css", async (c) => {
-  const db = createDb(c.env.pages);
-
-  const tailwindcss = await db.query.systemSettings.findFirst({
-    where: eq(systemSettings.name, "tailwindcss"),
-  });
-
-  if (!tailwindcss) {
-    return c.notFound();
-  }
-
-  return c.body(tailwindcss.value as string, 200, {
-    "Content-Type": "text/css; charset=utf-8",
-  });
-});
-
-api.get("*", async (c) => {
-
-  const db = createDb(c.env.pages);
-
-  async function findRouteFromPath(paths: string[]) {
-    let id = null
-    let result = null
-    for (const path of paths) {
-      result = await db.query.routes.findFirst({
-        where: and(id === null ? isNull(routes.parentId) : eq(routes.parentId, id),
-          eq(routes.slug, slug)),
-
-
-        with: {
-          page: {
-            with: {
-              layout: true,
-              attributeValues: {
-                with: {
-                  attribute: true,
-                },
-              }
-
-            }
-          },
-        },
-
-      })
-
-      if (!result) {
-        return null
-      }
-
-      id = result.id
-      // with: {
-      //   layout: true,
-      //   attributeValues: {
-      //     with: {
-      //       attribute: true,
-      //     },
-      //   },
-      // },
-    }
-    return result
-
-  }
-
-  let slug = c.req.path;
-  if (slug === "index.htm" || slug === "index.html") {
-    slug = "/"
-  }
-
-  const paths = slug === "/" ? [] : slug.split("/")
-
-  const route = await findRouteFromPath(["/", ...paths])
-
-
-  if (!route || !route.page || !route.page.layout) {
-    console.log("DEBUG route:", JSON.stringify(route, null, 2));
-
-    return c.notFound()
-  }
-
-  const page = route.page
-
-  try {
-    const layoutTemplates = engine.parse(page.layout.body);
-
-    const field = Object.fromEntries(
-      page.attributeValues.map(item => [
-        item.attribute.name,
-        item.valueText,
-      ])
-    )
-
-    console.log("[attributeValues]")
-    console.log(field)
-
-    const scope = {
-      slug,
-      page: {
-        id: page.id,
-        title: page.title,
-        layoutId: page.layoutId,
-        createdAt: page.createdAt,
-        updatedAt: page.updatedAt,
-        field: field
-      }
-    }
-    const html = await engine.render(layoutTemplates, {
-      debug: escape(JSON.stringify({ page, scope }, null, 2)),
-      ...scope
-    });
-
-    console.log(page.layout.contentType)
-
-    return c.body(html, 200, {
-      "Content-Type": `${page.layout.contentType}; charset=utf-8`,
-    });
-
-  } catch (error) {
-    if (error instanceof LiquidError) {
-      return c.text(error.message);
-    }
-    throw error
-  }
-});
-
-// それ以外はReact Routerで処理
-app.all("*", async (c) => {
-  const routerContext = new RouterContextProvider();
-
-  routerContext.set(cloudflareContext, {
-    env: c.env,
-    ctx: c.executionCtx as unknown as ExecutionContext,
-  });
-
-  console.log("[Request]", c.req.method, c.req.path);
-
-  const response = await requestHandler(c.req.raw, routerContext);
-  console.log("[React Router]", {
-    url: c.req.url,
-    status: response.status,
-    statusText: response.statusText,
-    contentType: response.headers.get("Content-Type"),
-  });
-
-
-  // React Routerが404ならHonoにフォールバック
-  if (response.status === 404) {
-    console.log("[Fallback] Hono");
-    return api.fetch(c.req.raw, c.env, c.executionCtx);
-  }
-
-  return response;
-});
-
-
+export type AppType = typeof app;
 export default app;

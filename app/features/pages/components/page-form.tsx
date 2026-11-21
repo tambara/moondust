@@ -21,8 +21,8 @@ type PageFormProps = {
     layoutId: string;
     attributeValues: Array<{
       id: string;
-      createdAt: Date;
-      updatedAt: Date;
+      createdAt: string;
+      updatedAt: string;
       attributeId: string;
       pageId: string;
       valueText: string | null;
